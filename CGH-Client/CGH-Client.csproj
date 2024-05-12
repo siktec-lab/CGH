@@ -1,0 +1,267 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6B0C2E88-9B00-44B5-BB7B-C958754AB8E5}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>CGH_Client</RootNamespace>
+    <AssemblyName>CGH-Client</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Text.Encodings.Web.8.0.0\lib\net462\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json, Version=8.0.0.3, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Text.Json.8.0.3\lib\net462\System.Text.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Forms\ChooseNameForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ChoosePlayerCardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\EnterRoomCodeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\GameLobbyForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\HostOrJoinForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\MainGameForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\SelectGameForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Networking\Client.cs" />
+    <Compile Include="Networking\ServerMsg.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utility\Functions.cs" />
+    <Compile Include="Utility\GameRoom.cs" />
+    <Compile Include="Utility\Globals.cs" />
+    <Compile Include="Utility\Player.cs" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\Backgrounds\background_1.png" />
+    <Content Include="Assets\Backgrounds\background_2.png" />
+    <Content Include="Assets\Backgrounds\background_3.png" />
+    <Content Include="Assets\Characters\char_1.png" />
+    <Content Include="Assets\Characters\char_10.png" />
+    <Content Include="Assets\Characters\char_11.png" />
+    <Content Include="Assets\Characters\char_12.png" />
+    <Content Include="Assets\Characters\char_13.png" />
+    <Content Include="Assets\Characters\char_2.png" />
+    <Content Include="Assets\Characters\char_3.png" />
+    <Content Include="Assets\Characters\char_4.png" />
+    <Content Include="Assets\Characters\char_5.png" />
+    <Content Include="Assets\Characters\char_6.png" />
+    <Content Include="Assets\Characters\char_7.png" />
+    <Content Include="Assets\Characters\char_8.png" />
+    <Content Include="Assets\Characters\char_9.png" />
+    <Content Include="Assets\Characters\frame_circle.png" />
+    <Content Include="Assets\Characters\frame_quad.png" />
+    <Content Include="Assets\Icons\createIcon.png" />
+    <Content Include="Assets\Icons\addIcon.png" />
+    <Content Include="Assets\Icons\joinIcon.png" />
+    <Content Include="Assets\Standard_52_Cards\card_back\cardBackBlue.png" />
+    <Content Include="Assets\Standard_52_Cards\card_back\cardBackGreen.png" />
+    <Content Include="Assets\Standard_52_Cards\card_back\cardBackRed.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_10.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_2.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_3.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_4.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_5.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_6.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_7.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_8.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_9.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_A.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_J.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_K.png" />
+    <Content Include="Assets\Standard_52_Cards\club\cardClubs_Q.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_10.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_2.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_3.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_4.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_5.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_6.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_7.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_8.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_9.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_A.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_J.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_K.png" />
+    <Content Include="Assets\Standard_52_Cards\diamond\cardDiamonds_Q.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_10.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_2.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_3.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_4.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_5.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_6.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_7.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_8.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_9.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_A.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_J.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_K.png" />
+    <Content Include="Assets\Standard_52_Cards\heart\cardHearts_Q.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_10.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_2.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_3.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_4.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_5.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_6.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_7.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_8.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_9.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_A.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_J.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_K.png" />
+    <Content Include="Assets\Standard_52_Cards\spade\cardSpades_Q.png" />
+    <Content Include="Assets\Uno\blue\0_blue.png" />
+    <Content Include="Assets\Uno\blue\1_blue.png" />
+    <Content Include="Assets\Uno\blue\2plus_blue.png" />
+    <Content Include="Assets\Uno\blue\2_blue.png" />
+    <Content Include="Assets\Uno\blue\3_blue.png" />
+    <Content Include="Assets\Uno\blue\4_blue.png" />
+    <Content Include="Assets\Uno\blue\5_blue.png" />
+    <Content Include="Assets\Uno\blue\6_blue.png" />
+    <Content Include="Assets\Uno\blue\7_blue.png" />
+    <Content Include="Assets\Uno\blue\8_blue.png" />
+    <Content Include="Assets\Uno\blue\9_blue.png" />
+    <Content Include="Assets\Uno\blue\block_blue.png" />
+    <Content Include="Assets\Uno\blue\inverse_blue.png" />
+    <Content Include="Assets\Uno\card back\card_back.png" />
+    <Content Include="Assets\Uno\green\0_green.png" />
+    <Content Include="Assets\Uno\green\1_green.png" />
+    <Content Include="Assets\Uno\green\2plus_green.png" />
+    <Content Include="Assets\Uno\green\2_green.png" />
+    <Content Include="Assets\Uno\green\3_green.png" />
+    <Content Include="Assets\Uno\green\4_green.png" />
+    <Content Include="Assets\Uno\green\5_green.png" />
+    <Content Include="Assets\Uno\green\6_green.png" />
+    <Content Include="Assets\Uno\green\7_green.png" />
+    <Content Include="Assets\Uno\green\8_green.png" />
+    <Content Include="Assets\Uno\green\9_green.png" />
+    <Content Include="Assets\Uno\green\block_green.png" />
+    <Content Include="Assets\Uno\green\inverse_green.png" />
+    <Content Include="Assets\Uno\red\0_red.png" />
+    <Content Include="Assets\Uno\red\1_red.png" />
+    <Content Include="Assets\Uno\red\2plus_red.png" />
+    <Content Include="Assets\Uno\red\2_red.png" />
+    <Content Include="Assets\Uno\red\3_red.png" />
+    <Content Include="Assets\Uno\red\4_red.png" />
+    <Content Include="Assets\Uno\red\5_red.png" />
+    <Content Include="Assets\Uno\red\6_red.png" />
+    <Content Include="Assets\Uno\red\7_red.png" />
+    <Content Include="Assets\Uno\red\8_red.png" />
+    <Content Include="Assets\Uno\red\9_red.png" />
+    <Content Include="Assets\Uno\red\block_red.png" />
+    <Content Include="Assets\Uno\red\inverse_red.png" />
+    <Content Include="Assets\Uno\wild\4_plus.png" />
+    <Content Include="Assets\Uno\wild\wild_card.png" />
+    <Content Include="Assets\Uno\yellow\0_yellow.png" />
+    <Content Include="Assets\Uno\yellow\1_yellow.png" />
+    <Content Include="Assets\Uno\yellow\2plus_yellow.png" />
+    <Content Include="Assets\Uno\yellow\2_yellow.png" />
+    <Content Include="Assets\Uno\yellow\3_yellow.png" />
+    <Content Include="Assets\Uno\yellow\4_yellow.png" />
+    <Content Include="Assets\Uno\yellow\5_yellow.png" />
+    <Content Include="Assets\Uno\yellow\6_yellow.png" />
+    <Content Include="Assets\Uno\yellow\7_yellow.png" />
+    <Content Include="Assets\Uno\yellow\8_yellow.png" />
+    <Content Include="Assets\Uno\yellow\9_yellow.png" />
+    <Content Include="Assets\Uno\yellow\block_yellow.png" />
+    <Content Include="Assets\Uno\yellow\inverse_yellow.png" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
