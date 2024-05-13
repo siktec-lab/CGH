@@ -102,13 +102,28 @@ namespace CRS_Server.Networking
                             {
                                 case "createGameLobby":
 
-                                    GameRoom gameRoom = JsonConvert.DeserializeObject<GameRoom>(clientMsg.msg);
+                                    string[] msgParts = clientMsg.msg.Split("{0}");
+
+                                    string[] gameID = msgParts[0].Split("-");
+                                    string gameType = gameID[0];
+                                    string gameCode = gameID[0];
+                                    string playerStr = msgParts[1];
+
+                                    Player player = JsonConvert.DeserializeObject<Player>(playerStr);
+
+                                    GameRoom gameRoom = new GameRoom()
+                                    {
+                                        gameType = gameType,
+                                        roomCode = int.Parse(gameCode),
+                                        cardPlayed = "",
+                                        currentPlayerTurn = ""
+                                    };
+                                    gameRoom.players.Add(player);
 
                                     string fileNameCreate = gameRoom.gameType + "-" + gameRoom.roomCode + ".json";
 
                                     if (!File.Exists(Globals.baseDirectory + @"\GameLobbies\" + fileNameCreate))
                                     {
-                                        //File.Create(Globals.baseDirectory + @"\GameLobbies\" + fileName);
                                         File.WriteAllText(Globals.baseDirectory + @"\GameLobbies\" + fileNameCreate, clientMsg.msg);
 
                                         Console.ResetColor();
@@ -117,7 +132,7 @@ namespace CRS_Server.Networking
                                         Console.Write("Server");
                                         Console.ResetColor();
                                         Console.WriteLine($"] {port}: msg: Game Room created successfully. purpose: Success");
-                                        SendMessage("Game Room created successfully.", "Success");
+                                        SendMessage("", "gameCreated");
                                     }
 
                                     else
@@ -128,7 +143,7 @@ namespace CRS_Server.Networking
                                         Console.Write("Server");
                                         Console.ResetColor();
                                         Console.WriteLine($"] {port}: msg: Game Room already created try again. purpose: Error");
-                                        SendMessage("Game Room already created try again.", "Error");
+                                        SendMessage("", "gameNotCreated");
                                     }
 
                                     break;
@@ -294,10 +309,7 @@ namespace CRS_Server.Networking
 
                                 case "checkWinner":
 
-                                    if (gameCards[])
-                                    {
 
-                                    }
 
                                     break;
 

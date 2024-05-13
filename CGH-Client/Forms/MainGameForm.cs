@@ -16,7 +16,7 @@ namespace CGH_Client.Forms
 
         List<PictureBox> pictureBoxesCards = new List<PictureBox>();
         Panel firstPlayerP, secondPlayerP, thirdPlayerP, fourthPlayerP;
-        PictureBox firstPlayerPB, secondPlayerPB, thirdPlayerPB, fourthPlayerPB, firstPlayerCardPB, secondPlayerCardPB, thirdPlayerCardPB, fourthPlayerCardPB, openCardPB;
+        PictureBox firstPlayerPB, secondPlayerPB, thirdPlayerPB, fourthPlayerPB, firstPlayerCardPB, secondPlayerCardPB, thirdPlayerCardPB, fourthPlayerCardPB, openCardPB, closeBtnPB;
         Label firstPlayerLB, secondPlayerLB, thirdPlayerLB, fourthPlayerLB, openCardLB, currentPlayerTurnLB, currentPlayerTurn;
 
         public MainGameForm()
@@ -148,7 +148,16 @@ namespace CGH_Client.Forms
             Functions.CenterControlHorizontally(this, currentPlayerTurn);
             Controls.Add(currentPlayerTurn);
 
-
+            closeBtnPB = new PictureBox()
+            {
+                Size = new Size(40, 40),
+                Location = new Point(50, 50),
+                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Icons\powerIcon.gif"),
+                BackColor = Color.Transparent,
+                Cursor = Cursors.Hand
+            };
+            Controls.Add(closeBtnPB);
+            closeBtnPB.Click += CloseBtnPB_Click;
 
             createThirdAndFourthPlayers();
 
@@ -156,6 +165,15 @@ namespace CGH_Client.Forms
 
             this.FormClosed += MainGameForm_FormClosed;
 
+        }
+
+        private void CloseBtnPB_Click(object sender, EventArgs e)
+        {
+            Globals.ServerConnector.SendMessage(Globals.gameChoosed + "-" + Globals.gameCode, "deleteGame");
+
+            Thread.Sleep(3000);
+
+            Environment.Exit(0);
         }
 
         private void OpenCardPB_Click(object sender, EventArgs e)

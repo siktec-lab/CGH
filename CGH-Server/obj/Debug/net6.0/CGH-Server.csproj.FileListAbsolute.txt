@@ -15,3 +15,4 @@ E:\ProjectsBag\Coding\CGH\CGH-Server\obj\Debug\net6.0\CGH-Server.pdb
 E:\ProjectsBag\Coding\CGH\CGH-Server\obj\Debug\net6.0\CGH-Server.genruntimeconfig.cache
 E:\ProjectsBag\Coding\CGH\CGH-Server\obj\Debug\net6.0\ref\CGH-Server.dll
 E:\ProjectsBag\Coding\CGH\CGH-Server\obj\Debug\net6.0\CGH-Server.csproj.Up2Date
+E:\ProjectsBag\Coding\CGH\CGH-Server\obj\Debug\net6.0\CGH-Server.sourcelink.json

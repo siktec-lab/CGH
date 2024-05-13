@@ -78,9 +78,10 @@ namespace CRS_Client.Networking
                                                 SendMessage("", "Connect Me");
                                                 break;
 
-                                            case "Error":
-                                                MessageBox.Show(serverMsg.msg, serverMsg.purpose);
-                                                Application.Exit();
+                                            case "gameCreated":
+
+                                                Globals.isGameCreated = true;
+
                                                 break;
 
                                             case "isRoomAvailable":

@@ -121,54 +121,47 @@ namespace CGH_Client.Forms
 
             if (isNameOk && isPictureOk)
             {
-                Globals.globalGameRoom = new GameRoom();
                 Globals.charName = chooseNameTB.Text;
                 Player player = new Player();
                 player.Name = Globals.charName;
                 player.ImgCharNum = Globals.charTagSelected;
                 player.isDisconnected = false;
+                player.selectedCard = "";
 
                 if (Globals.hostOrJoin == "HOST")
                 {
-                    Globals.globalGameRoom.gameType = Globals.gameChoosed;
-                    Globals.globalGameRoom.roomCode = Functions.createGameCode();
-                    Globals.gameCode = Globals.globalGameRoom.roomCode;
-                    Globals.globalGameRoom.cardPlayed = "";
-                    Globals.globalGameRoom.players = new List<Player>();
-                    Globals.globalGameRoom.currentPlayerTurn = player.Name;
+                    //Globals.globalGameRoom.gameType = Globals.gameChoosed;
+                    //Globals.globalGameRoom.roomCode = Functions.createGameCode();
+                    //Globals.gameCode = Globals.globalGameRoom.roomCode;
+                    //Globals.globalGameRoom.cardPlayed = "";
+                    //Globals.globalGameRoom.players = new List<Player>();
+                    //Globals.globalGameRoom.currentPlayerTurn = player.Name;
                     player.isHost = true;
-                    player.selectedCard = "";
-                    player.gameID = Globals.gameChoosed + "-" + Globals.gameCode;
-
-
-                    Globals.globalGameRoom.players.Add(player);
-                    string msgToSend = JsonConvert.SerializeObject(Globals.globalGameRoom);
-                    Globals.ServerConnector.SendMessage(msgToSend, "createGameLobby");
-                    Thread.Sleep(100);
-                    Globals.ServerConnector.SendMessage(player.gameID, "getGameLobby");
+                    Globals.ServerConnector.SendMessage(Globals.gameChoosed + "{0}" + player, "createGameLobby");
                 }
 
                 if (Globals.hostOrJoin == "JOIN")
                 {
-                    Globals.globalGameRoom.currentPlayerTurn = "";
-                    player.selectedCard = "";
-                    player.gameID = Globals.gameChoosed + "-" + Globals.gameCode;
                     player.isHost = false;
-                    string msgToSend = JsonConvert.SerializeObject(player);
-                    Globals.ServerConnector.SendMessage(msgToSend, "joinPlayerToGame");
-                    Thread.Sleep(100);
-                    Globals.ServerConnector.SendMessage(player.gameID, "getGameLobby");
+                    Globals.ServerConnector.SendMessage(Globals.gameChoosed + "-" + Globals.gameCode + "{0}" + player, "joinPlayerToGame");
                 }
-
-                Globals.gameLobbyForm = new GameLobbyForm();
-                this.Hide();
-                Globals.gameLobbyForm.Show();
             }
 
             else
             {
                 MessageBox.Show(sb.ToString());
                 sb.Clear();
+            }
+
+            while (true)
+            {
+                if (Globals.isGameCreated)
+                {
+                    Globals.gameLobbyForm = new GameLobbyForm();
+                    this.Hide();
+                    Globals.gameLobbyForm.Show();
+                    break;
+                }
             }
         }
 

@@ -151,6 +151,7 @@
     <Content Include="Assets\Icons\createIcon.png" />
     <Content Include="Assets\Icons\addIcon.png" />
     <Content Include="Assets\Icons\joinIcon.png" />
+    <Content Include="Assets\Icons\powerIcon.gif" />
     <Content Include="Assets\Standard_52_Cards\card_back\cardBackBlue.png" />
     <Content Include="Assets\Standard_52_Cards\card_back\cardBackGreen.png" />
     <Content Include="Assets\Standard_52_Cards\card_back\cardBackRed.png" />

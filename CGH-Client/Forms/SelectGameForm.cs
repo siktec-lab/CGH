@@ -13,9 +13,8 @@ namespace CGH_Client.Forms
     {
 
         Label mainLB, unoLB, warLB, cheatLB;
-        PictureBox unoPB, warPB, cheatPB;
+        PictureBox unoPB, warPB, cheatPB, closeBtnPB;
         Panel unoPanel, warPanel, cheatPanel;
-
 
         public SelectGameForm()
         {
@@ -143,6 +142,22 @@ namespace CGH_Client.Forms
             cheatPanel.Controls.Add(cheatLB);
             cheatLB.Click += CheatPanel_Click;
 
+            closeBtnPB = new PictureBox()
+            {
+                Size = new Size(40, 40),
+                Location = new Point(50, 50),
+                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Icons\powerIcon.gif"),
+                BackColor = Color.Transparent,
+                Cursor = Cursors.Hand
+            };
+            Controls.Add(closeBtnPB);
+            closeBtnPB.Click += CloseBtnPB_Click;
+
+        }
+
+        private void CloseBtnPB_Click(object sender, EventArgs e)
+        {
+            Environment.Exit(0);
         }
 
         private void CheatPanel_Click(object sender, EventArgs e)

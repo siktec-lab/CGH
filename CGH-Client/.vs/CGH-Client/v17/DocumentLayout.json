@@ -3,6 +3,18 @@
   "WorkspaceRootPath": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Client\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{6B0C2E88-9B00-44B5-BB7B-C958754AB8E5}|CGH-Client.csproj|e:\\projectsbag\\coding\\cgh\\cgh-client\\forms\\choosenameform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0C2E88-9B00-44B5-BB7B-C958754AB8E5}|CGH-Client.csproj|solutionrelative:forms\\choosenameform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0C2E88-9B00-44B5-BB7B-C958754AB8E5}|CGH-Client.csproj|e:\\projectsbag\\coding\\cgh\\cgh-client\\networking\\client.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0C2E88-9B00-44B5-BB7B-C958754AB8E5}|CGH-Client.csproj|solutionrelative:networking\\client.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0C2E88-9B00-44B5-BB7B-C958754AB8E5}|CGH-Client.csproj|e:\\projectsbag\\coding\\cgh\\cgh-client\\utility\\globals.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0C2E88-9B00-44B5-BB7B-C958754AB8E5}|CGH-Client.csproj|solutionrelative:utility\\globals.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{539BC9A3-FCE0-4076-83AE-345B5AFCC29F}|..\\CGH-Server\\CGH-Server.csproj|e:\\projectsbag\\coding\\cgh\\cgh-server\\networking\\tcp.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -13,8 +25,47 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 6,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Globals.cs",
+              "DocumentMoniker": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Client\\Utility\\Globals.cs",
+              "RelativeDocumentMoniker": "Utility\\Globals.cs",
+              "ToolTip": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Client\\Utility\\Globals.cs",
+              "RelativeToolTip": "Utility\\Globals.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAACEAAAAxAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-13T20:26:40.849Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Client.cs",
+              "DocumentMoniker": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Client\\Networking\\Client.cs",
+              "RelativeDocumentMoniker": "Networking\\Client.cs",
+              "ToolTip": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Client\\Networking\\Client.cs",
+              "RelativeToolTip": "Networking\\Client.cs",
+              "ViewState": "AQIAAD4AAAAAAAAAAAAuwFIAAABNAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-13T20:25:40.013Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "TCP.cs",
+              "DocumentMoniker": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Server\\Networking\\TCP.cs",
+              "RelativeDocumentMoniker": "..\\CGH-Server\\Networking\\TCP.cs",
+              "ToolTip": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Server\\Networking\\TCP.cs",
+              "RelativeToolTip": "..\\CGH-Server\\Networking\\TCP.cs",
+              "ViewState": "AQIAAHQAAAAAAAAAAAAIwIYAAABHAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-13T17:14:03.15Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
@@ -30,14 +81,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "TCP.cs",
-              "DocumentMoniker": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Server\\Networking\\TCP.cs",
-              "RelativeDocumentMoniker": "..\\CGH-Server\\Networking\\TCP.cs",
-              "ToolTip": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Server\\Networking\\TCP.cs",
-              "RelativeToolTip": "..\\CGH-Server\\Networking\\TCP.cs",
-              "ViewState": "AQIAAP4AAAAAAAAAAAAAACYBAAAzAAAA",
+              "Title": "ChooseNameForm.cs",
+              "DocumentMoniker": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Client\\Forms\\ChooseNameForm.cs",
+              "RelativeDocumentMoniker": "Forms\\ChooseNameForm.cs",
+              "ToolTip": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Client\\Forms\\ChooseNameForm.cs",
+              "RelativeToolTip": "Forms\\ChooseNameForm.cs",
+              "ViewState": "AQIAAIoAAAAAAAAAAAAswKYAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-12T14:53:55.958Z",
+              "WhenOpened": "2024-05-13T17:12:54.737Z",
               "EditorCaption": ""
             }
           ]

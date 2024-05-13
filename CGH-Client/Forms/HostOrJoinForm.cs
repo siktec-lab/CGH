@@ -13,7 +13,7 @@ namespace CGH_Client.Forms
     {
 
         Panel createPanel, joinPanel;
-        PictureBox createPB, joinPB;
+        PictureBox createPB, joinPB, closeBtnPB;
         Label createLB, joinLB, mainLB, selectedGameLB;
 
         public HostOrJoinForm()
@@ -120,8 +120,26 @@ namespace CGH_Client.Forms
             createPanel.Controls.Add(createLB);
             createLB.Click += CreatePanel_Click;
 
+            closeBtnPB = new PictureBox()
+            {
+                Size = new Size(40, 40),
+                Location = new Point(50, 50),
+                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Icons\powerIcon.gif"),
+                BackColor = Color.Transparent,
+                Cursor = Cursors.Hand
+            };
+            Controls.Add(closeBtnPB);
+            closeBtnPB.Click += CloseBtnPB_Click;
+
             this.FormClosed += HostOrJoinForm_FormClosed;
 
+        }
+
+        private void CloseBtnPB_Click(object sender, EventArgs e)
+        {
+            SelectGameForm selectGameForm = new SelectGameForm();
+            this.Hide();
+            selectGameForm.Show();
         }
 
         private void JoinPanel_Click(object sender, EventArgs e)

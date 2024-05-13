@@ -31,6 +31,7 @@ namespace CGH_Client.Utility
         public static string isRoomAvailable = "waiting";
 
         public static GameLobbyForm gameLobbyForm;
+        public static bool isGameCreated = false;
 
     }
 }

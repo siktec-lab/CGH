@@ -18,6 +18,7 @@ namespace CGH_Client.Forms
         Label mainLB, selectedGameLB, lobbyCodeLB, codeLB;
         ListView joinedPlayers;
         Button startGameB;
+        PictureBox closeBtnPB;
 
         public bool isRefreshing = true;
 
@@ -108,10 +109,50 @@ namespace CGH_Client.Forms
             startGameB.Hide();
             startGameB.Click += StartGameB_Click;
 
+            closeBtnPB = new PictureBox()
+            {
+                Size = new Size(40, 40),
+                Location = new Point(50, 50),
+                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Icons\powerIcon.gif"),
+                BackColor = Color.Transparent,
+                Cursor = Cursors.Hand
+            };
+            Controls.Add(closeBtnPB);
+            closeBtnPB.Click += CloseBtnPB_Click;
+
             new Thread(new ThreadStart(keepRefreshingLobby)).Start();
 
             this.FormClosed += GameLobbyForm_FormClosed;
 
+        }
+
+        private void CloseBtnPB_Click(object sender, EventArgs e)
+        {
+            Player tempPlayer = new Player();
+            tempPlayer.Name = Globals.charName;
+            tempPlayer.ImgCharNum = Globals.charTagSelected;
+            tempPlayer.gameID = Globals.globalGameRoom.gameType + "-" + Globals.globalGameRoom.roomCode;
+            tempPlayer.isDisconnected = true;
+
+            switch (Globals.hostOrJoin)
+            {
+                case "HOST":
+
+                    tempPlayer.isHost = true;
+
+                    break;
+
+                case "JOIN":
+
+                    tempPlayer.isHost = false;
+
+                    break;
+            }
+
+            string msgToSend = JsonConvert.SerializeObject(tempPlayer);
+
+            Globals.ServerConnector.SendMessage(msgToSend, "removeFromGame");
+            Environment.Exit(0);
         }
 
         private void StartGameB_Click(object sender, EventArgs e)
