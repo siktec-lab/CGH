@@ -26,6 +26,7 @@ namespace CGH_Client.Utility
 
         public static Client ServerConnector;
         public static string serverIP = "127.0.0.1";
+
         public static GameRoom globalGameRoom;
 
         public static string isRoomAvailable = "waiting";

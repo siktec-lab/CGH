@@ -171,8 +171,6 @@ namespace CGH_Client.Forms
         {
             Globals.ServerConnector.SendMessage(Globals.gameChoosed + "-" + Globals.gameCode, "deleteGame");
 
-            Thread.Sleep(3000);
-
             Environment.Exit(0);
         }
 

@@ -83,7 +83,7 @@ namespace CRS_Server.Networking
 
                             List<string> gameCards = new List<string>();
 
-                            if (msgReceived.Contains("}{"))
+                            if (msgReceived.Contains("\n"))
                             {
                                 continue;
                             }
@@ -109,22 +109,48 @@ namespace CRS_Server.Networking
                                     string gameCode = gameID[0];
                                     string playerStr = msgParts[1];
 
-                                    Player player = JsonConvert.DeserializeObject<Player>(playerStr);
+                                    string gameLobby = "";
 
-                                    GameRoom gameRoom = new GameRoom()
+                                    Player playerCreate = JsonConvert.DeserializeObject<Player>(playerStr);
+
+                                    switch (gameType)
                                     {
-                                        gameType = gameType,
-                                        roomCode = int.Parse(gameCode),
-                                        cardPlayed = "",
-                                        currentPlayerTurn = ""
-                                    };
-                                    gameRoom.players.Add(player);
+                                        case "War":
 
-                                    string fileNameCreate = gameRoom.gameType + "-" + gameRoom.roomCode + ".json";
+                                            WarGameRoom warGameRoom = new WarGameRoom()
+                                            {
+                                                gameType = gameType,
+                                                roomCode = int.Parse(gameCode),
+                                                cardPlayed = "",
+                                                currentPlayerTurn = "",
+                                                players = new List<Player>() { playerCreate }
+                                            };
+
+                                            gameLobby = JsonConvert.SerializeObject(warGameRoom);
+
+                                            break;
+
+                                        default:
+
+                                            GameRoom gameRoom = new GameRoom()
+                                            {
+                                                gameType = gameType,
+                                                roomCode = int.Parse(gameCode),
+                                                cardPlayed = "",
+                                                currentPlayerTurn = "",
+                                                players = new List<Player>() { playerCreate }
+                                            };
+
+                                            gameLobby = JsonConvert.SerializeObject(gameRoom);
+
+                                            break;
+                                    }
+
+                                    string fileNameCreate = gameType + "-" + gameCode + ".json";
 
                                     if (!File.Exists(Globals.baseDirectory + @"\GameLobbies\" + fileNameCreate))
                                     {
-                                        File.WriteAllText(Globals.baseDirectory + @"\GameLobbies\" + fileNameCreate, clientMsg.msg);
+                                        File.WriteAllText(Globals.baseDirectory + @"\GameLobbies\" + fileNameCreate, gameLobby);
 
                                         Console.ResetColor();
                                         Console.Write("[");
@@ -150,17 +176,17 @@ namespace CRS_Server.Networking
 
                                 case "joinPlayerToGame":
 
-                                    Player player = JsonConvert.DeserializeObject<Player>(clientMsg.msg);
+                                    Player playerJoin = JsonConvert.DeserializeObject<Player>(clientMsg.msg);
                                     bool playerFound = false;
 
-                                    string fileNameJoin = player.gameID + ".json";
+                                    string fileNameJoin = playerJoin.gameID + ".json";
 
                                     string fileLines = File.ReadAllText(Globals.baseDirectory + @"\GameLobbies\" + fileNameJoin);
                                     GameRoom tempGameRoomJoin = JsonConvert.DeserializeObject<GameRoom>(fileLines);
 
                                     for (int i = 0; i < tempGameRoomJoin.players.Count; i++)
                                     {
-                                        if (tempGameRoomJoin.players[i].Name == player.Name)
+                                        if (tempGameRoomJoin.players[i].Name == playerJoin.Name)
                                         {
                                             playerFound = true;
                                             tempGameRoomJoin.players[i].isDisconnected = false;
@@ -169,7 +195,7 @@ namespace CRS_Server.Networking
 
                                     if (!playerFound)
                                     {
-                                        tempGameRoomJoin.players.Add(player);
+                                        tempGameRoomJoin.players.Add(playerJoin);
                                     }
 
                                     string newFileLines = JsonConvert.SerializeObject(tempGameRoomJoin);
@@ -271,15 +297,15 @@ namespace CRS_Server.Networking
                                     Random r = new Random();
                                     int randomCard = r.Next(0, Globals.gameCards.Count);
 
-                                    string[] msgParts = clientMsg.msg.Split("{0}");
+                                    string[] msgPartsChange = clientMsg.msg.Split("{0}");
 
-                                    string playerName = msgParts[0];
-                                    string gameID = msgParts[1];
+                                    string playerName = msgPartsChange[0];
+                                    string gameIDChange = msgPartsChange[1];
                                     string selectedCard = Globals.gameCards[randomCard];
 
                                     Globals.gameCards.Remove(selectedCard);
 
-                                    string fileLinesChangeSelectedCard = File.ReadAllText(Globals.baseDirectory + @"\GameLobbies\" + gameID + ".json");
+                                    string fileLinesChangeSelectedCard = File.ReadAllText(Globals.baseDirectory + @"\GameLobbies\" + gameIDChange + ".json");
 
                                     GameRoom tempGameChangeSelectedCard = JsonConvert.DeserializeObject<GameRoom>(fileLinesChangeSelectedCard);
 
@@ -303,7 +329,7 @@ namespace CRS_Server.Networking
                                     gameCards.Add(selectedCard);
 
                                     string newFileLinesChanged = JsonConvert.SerializeObject(tempGameChangeSelectedCard);
-                                    File.WriteAllText(Globals.baseDirectory + @"\GameLobbies\" + gameID + ".json", newFileLinesChanged);
+                                    File.WriteAllText(Globals.baseDirectory + @"\GameLobbies\" + gameIDChange + ".json", newFileLinesChanged);
 
                                     break;
 

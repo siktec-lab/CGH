@@ -130,20 +130,16 @@ namespace CGH_Client.Forms
 
                 if (Globals.hostOrJoin == "HOST")
                 {
-                    //Globals.globalGameRoom.gameType = Globals.gameChoosed;
-                    //Globals.globalGameRoom.roomCode = Functions.createGameCode();
-                    //Globals.gameCode = Globals.globalGameRoom.roomCode;
-                    //Globals.globalGameRoom.cardPlayed = "";
-                    //Globals.globalGameRoom.players = new List<Player>();
-                    //Globals.globalGameRoom.currentPlayerTurn = player.Name;
                     player.isHost = true;
-                    Globals.ServerConnector.SendMessage(Globals.gameChoosed + "{0}" + player, "createGameLobby");
+                    string playerStr = JsonConvert.SerializeObject(player);
+                    Globals.ServerConnector.SendMessage(Globals.gameChoosed + "{0}" + playerStr, "createGameLobby");
                 }
 
                 if (Globals.hostOrJoin == "JOIN")
                 {
                     player.isHost = false;
-                    Globals.ServerConnector.SendMessage(Globals.gameChoosed + "-" + Globals.gameCode + "{0}" + player, "joinPlayerToGame");
+                    string playerStr = JsonConvert.SerializeObject(player);
+                    Globals.ServerConnector.SendMessage(Globals.gameChoosed + "-" + Globals.gameCode + "{0}" + playerStr, "joinPlayerToGame");
                 }
             }
 
