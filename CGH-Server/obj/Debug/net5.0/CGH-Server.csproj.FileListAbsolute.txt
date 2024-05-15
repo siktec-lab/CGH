@@ -1,5 +1,0 @@
-E:\ProjectsBag\Coding\CGH\CGH-Server\obj\Debug\net5.0\CGH-Server.csproj.AssemblyReference.cache
-E:\ProjectsBag\Coding\CGH\CGH-Server\obj\Debug\net5.0\CGH-Server.GeneratedMSBuildEditorConfig.editorconfig
-E:\ProjectsBag\Coding\CGH\CGH-Server\obj\Debug\net5.0\CGH-Server.AssemblyInfoInputs.cache
-E:\ProjectsBag\Coding\CGH\CGH-Server\obj\Debug\net5.0\CGH-Server.AssemblyInfo.cs
-E:\ProjectsBag\Coding\CGH\CGH-Server\obj\Debug\net5.0\CGH-Server.csproj.CoreCompileInputs.cache
