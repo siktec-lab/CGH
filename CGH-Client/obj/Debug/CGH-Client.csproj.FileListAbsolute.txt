@@ -57,4 +57,4 @@ D:\ProjectsBag\Coding\CGH\CGH-Client\obj\Debug\CGH-Client.csproj.CoreCompileInpu
 D:\ProjectsBag\Coding\CGH\CGH-Client\obj\Debug\CGH-Client.csproj.CopyComplete
 D:\ProjectsBag\Coding\CGH\CGH-Client\obj\Debug\CGH-Client.exe
 D:\ProjectsBag\Coding\CGH\CGH-Client\obj\Debug\CGH-Client.pdb
-E:\ProjectsBag\Coding\CGH\CGH-Client\obj\Debug\CGH-Client.csproj.Up2Date
+E:\ProjectsBag\Coding\CGH\CGH-Client\obj\Debug\CGH-Client.csproj.CopyComplete

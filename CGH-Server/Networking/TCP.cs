@@ -104,9 +104,10 @@ namespace CRS_Server.Networking
 
                                     string[] msgParts = clientMsg.msg.Split("{0}");
 
-                                    string[] gameID = msgParts[0].Split("-");
-                                    string gameType = gameID[0];
-                                    string gameCode = gameID[0];
+                                    Random rand = new Random();
+
+                                    string gameType = msgParts[0];
+                                    string gameCode = rand.Next(100000, 1000000).ToString();
                                     string playerStr = msgParts[1];
 
                                     string gameLobby = "";
@@ -120,12 +121,12 @@ namespace CRS_Server.Networking
                                             WarGameRoom warGameRoom = new WarGameRoom()
                                             {
                                                 gameType = gameType,
-                                                roomCode = int.Parse(gameCode),
                                                 cardPlayed = "",
                                                 currentPlayerTurn = "",
                                                 players = new List<Player>() { playerCreate }
                                             };
 
+                                            warGameRoom.roomCode = int.Parse(gameCode);
                                             gameLobby = JsonConvert.SerializeObject(warGameRoom);
 
                                             break;
@@ -135,12 +136,12 @@ namespace CRS_Server.Networking
                                             GameRoom gameRoom = new GameRoom()
                                             {
                                                 gameType = gameType,
-                                                roomCode = int.Parse(gameCode),
                                                 cardPlayed = "",
                                                 currentPlayerTurn = "",
                                                 players = new List<Player>() { playerCreate }
                                             };
 
+                                            gameRoom.roomCode = int.Parse(gameCode);
                                             gameLobby = JsonConvert.SerializeObject(gameRoom);
 
                                             break;
@@ -158,7 +159,7 @@ namespace CRS_Server.Networking
                                         Console.Write("Server");
                                         Console.ResetColor();
                                         Console.WriteLine($"] {port}: msg: Game Room created successfully. purpose: Success");
-                                        SendMessage("", "gameCreated");
+                                        SendMessage(gameType + "-" + gameCode, "gameCreated");
                                     }
 
                                     else

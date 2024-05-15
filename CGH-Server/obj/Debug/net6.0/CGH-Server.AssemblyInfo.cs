@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CGH-Server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+af945890f0a7d2e5596f2bdf6d7daa44044f1ccd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
 [assembly: System.Reflection.AssemblyProductAttribute("CGH-Server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CGH-Server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

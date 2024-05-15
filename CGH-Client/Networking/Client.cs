@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -81,6 +82,9 @@ namespace CRS_Client.Networking
                                             case "gameCreated":
 
                                                 Globals.isGameCreated = true;
+                                                Globals.gameID = serverMsg.msg;
+                                                string[] msgP = Globals.gameID.Split('-');
+                                                Globals.gameCode = int.Parse(msgP[1]);
 
                                                 break;
 

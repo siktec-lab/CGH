@@ -19,6 +19,7 @@ namespace CGH_Client.Utility
         public static string gameChoosed;
         public static int gameCode;
         public static string hostOrJoin;
+        public static string gameID;
 
         public static Image charImgSelected;
         public static int charTagSelected;

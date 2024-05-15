@@ -120,7 +120,7 @@ namespace CGH_Client.Forms
             Controls.Add(closeBtnPB);
             closeBtnPB.Click += CloseBtnPB_Click;
 
-            new Thread(new ThreadStart(keepRefreshingLobby)).Start();
+            //new Thread(new ThreadStart(keepRefreshingLobby)).Start();
 
             this.FormClosed += GameLobbyForm_FormClosed;
 
@@ -128,14 +128,16 @@ namespace CGH_Client.Forms
 
         private void CloseBtnPB_Click(object sender, EventArgs e)
         {
+
             Player tempPlayer = new Player();
             tempPlayer.Name = Globals.charName;
             tempPlayer.ImgCharNum = Globals.charTagSelected;
-            tempPlayer.gameID = Globals.globalGameRoom.gameType + "-" + Globals.globalGameRoom.roomCode;
+            tempPlayer.gameID = Globals.gameID;
             tempPlayer.isDisconnected = true;
 
             switch (Globals.hostOrJoin)
             {
+
                 case "HOST":
 
                     tempPlayer.isHost = true;

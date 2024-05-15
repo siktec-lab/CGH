@@ -55,7 +55,7 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Neriya\\.nuget\\packages\\": {}
+    "C:\\Users\\User.STUDENT1\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
@@ -63,11 +63,11 @@
       "projectUniqueName": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Server\\CGH-Server.csproj",
       "projectName": "CGH-Server",
       "projectPath": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Server\\CGH-Server.csproj",
-      "packagesPath": "C:\\Users\\Neriya\\.nuget\\packages\\",
+      "packagesPath": "C:\\Users\\User.STUDENT1\\.nuget\\packages\\",
       "outputPath": "E:\\ProjectsBag\\Coding\\CGH\\CGH-Server\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Neriya\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\User.STUDENT1\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -87,11 +87,6 @@
         "warnAsError": [
           "NU1605"
         ]
-      },
-      "restoreAuditProperties": {
-        "enableAudit": "true",
-        "auditLevel": "low",
-        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -114,30 +109,12 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[6.0.28, 6.0.28]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Host.win-x64",
-            "version": "[6.0.28, 6.0.28]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[6.0.28, 6.0.28]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[6.0.28, 6.0.28]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.202\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.403\\RuntimeIdentifierGraph.json"
       }
     }
   }
