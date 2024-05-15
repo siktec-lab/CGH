@@ -1,16 +1,15 @@
 ﻿using CGH_Client.Forms;
 using CGH_Client.Utility;
+using CGH_Client.Networking.Messages;
 using Newtonsoft.Json;
 using System;
-using System.Net;
 using System.Net.Sockets;
-using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
 
-namespace CRS_Client.Networking
+namespace CGH_Client.Networking
 {
     public class Client
     {
@@ -39,12 +38,13 @@ namespace CRS_Client.Networking
         }
         public void Stop()
         {
+            this.SendMessage("", "disconnect");
+            Thread.Sleep(100);
             tcpThread.Abort();
         }
 
         //Listen to messages come from Server
         public void ListenToServer()
-
         {
             while (isListenToServer)
             {
@@ -70,81 +70,301 @@ namespace CRS_Client.Networking
                                         switch (serverMsg.purpose)
                                         {
                                             case "Connect Here":
-                                                SendMessage("", "Connected");
-                                                isListenToServer = false;
-                                                Globals.ServerConnector = new Client(Globals.serverIP, int.Parse(serverMsg.msg));
-                                                Globals.ServerConnector.Start();
+                                                {
+                                                    SendMessage("", "Connected");
+                                                    isListenToServer = false;
+                                                    Globals.ServerConnector = new Client(Globals.serverIP, int.Parse(serverMsg.msg));
+                                                    Globals.ServerConnector.Start();
+                                                }
                                                 break;
                                             case "Connected To Router":
-                                                SendMessage("", "Connect Me");
-                                                break;
-
-                                            case "gameCreated":
-
-                                                Globals.isGameCreated = true;
-                                                Globals.gameID = serverMsg.msg;
-                                                string[] msgP = Globals.gameID.Split('-');
-                                                Globals.gameCode = int.Parse(msgP[1]);
-
-                                                break;
-
-                                            case "isRoomAvailable":
-
-                                                if (serverMsg.msg == "True")
                                                 {
-                                                    Globals.isRoomAvailable = "True";
-                                                    Thread.Sleep(1000);
-                                                    Globals.isRoomAvailable = "waiting";
+                                                    SendMessage("", "Connect Me");
                                                 }
-
-                                                else
+                                                break;
+                                            case "Error":
                                                 {
-                                                    Globals.isRoomAvailable = "False";
-                                                    Thread.Sleep(1000);
-                                                    Globals.isRoomAvailable = "waiting";
+                                                    MessageBox.Show(serverMsg.msg, serverMsg.purpose);
                                                 }
-
                                                 break;
-
-                                            case "returnedGameLobby":
-
-                                                Globals.globalGameRoom = JsonConvert.DeserializeObject<GameRoom>(serverMsg.msg);
-
-                                                break;
-
-                                            case "hostDisconnected":
-
-                                                if (Globals.gameChoosed + "-" + Globals.gameCode == serverMsg.msg)
+                                            case "room-availability":
                                                 {
-                                                    Environment.Exit(0);
-                                                }
-
-                                                break;
-
-                                            case "gameDeleted":
-
-                                                if (Globals.gameChoosed + "-" + Globals.gameCode == serverMsg.msg)
-                                                {
-                                                    Environment.Exit(0);
-                                                }
-
-                                                break;
-
-                                            case "gameStarted":
-                                                if (Globals.gameChoosed + "-" + Globals.gameCode == serverMsg.msg)
-                                                {
-                                                    Globals.gameLobbyForm.Invoke((MethodInvoker)delegate
+                                                    if (Globals.currentScreen is EnterRoomCodeForm screen)
                                                     {
-                                                        Globals.gameLobbyForm.isRefreshing = false;
-                                                        Globals.gameLobbyForm.Hide();
-                                                    });
-
-                                                    // Create and show the main game form on the UI thread
-                                                    Globals.gameLobbyForm.Invoke((MethodInvoker)delegate
+                                                        if (serverMsg.msg == "True" && screen.selectedRoomCode > 0)
+                                                        {
+                                                            screen.Invoke((MethodInvoker)delegate
+                                                            {
+                                                                // Open Select Player:
+                                                                ChooseNameForm next = new ChooseNameForm(null);
+                                                                next.withCode = screen.selectedRoomCode;
+                                                                Globals.hostOrJoin = "JOIN";
+                                                                screen.SwitchToForm(next);
+                                                            });
+                                                        }
+                                                        else
+                                                        {
+                                                            MessageBox.Show("הקוד שהזנת אינו תואם למשחקים קיימים", "Error");
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                            case "created-game-room":
+                                                {
+                                                    CreateGameResponse createGameResponse = JsonConvert.DeserializeObject<CreateGameResponse>(serverMsg.msg);
+                                                    if (createGameResponse == null)
                                                     {
-                                                        MainGameForm mainGameForm = new MainGameForm();
-                                                        mainGameForm.Show();
-                                                    });
+                                                        MessageBox.Show("Error in creating game room", "Error");
+                                                    }
+
+                                                    // Only activate if we are in the ChooseNameForm
+                                                    if (
+                                                        Globals.hostOrJoin == "HOST" &&
+                                                        Globals.currentScreen is ChooseNameForm screen)
+                                                    {
+                                                        screen.Invoke((MethodInvoker)delegate
+                                                        {
+                                                            if (createGameResponse.gameType == "War")
+                                                            {
+                                                                // Create the game room:
+                                                                WarGameRoom gameRoom = new WarGameRoom();
+                                                                gameRoom.AddPlayers(createGameResponse.players);
+                                                                gameRoom.myPlayerIndex = createGameResponse.player;
+                                                                Player me = gameRoom.GetPlayer(gameRoom.myPlayerIndex);
+                                                                gameRoom.myPlayerName = me.Name;
+                                                                gameRoom.gameType = createGameResponse.gameType;
+                                                                gameRoom.roomCode = createGameResponse.roomCode;
+                                                                Globals.gameRoom = gameRoom;
+
+                                                            }
+                                                            else if (createGameResponse.gameType == "Uno")
+                                                            {
+                                                                MessageBox.Show("Uno not implemented yet", "ToDo");
+                                                            }
+                                                            else if (createGameResponse.gameType == "Cheat")
+                                                            {
+                                                                MessageBox.Show("Cheat not implemented yet", "ToDo");
+                                                            }
+                                                            else
+                                                            {
+                                                                MessageBox.Show("Error unknown game type", "Error");
+                                                            }
+
+                                                            // Open Lobby:
+                                                            GameLobbyForm lobby = new GameLobbyForm(null);
+                                                            screen.SwitchToForm(lobby);
+                                                        });
+                                                    }
+                                                }
+                                                break;
+                                            case "joined-game-room":
+                                                {
+                                                    JoinGameResponse joinGameResponse = JsonConvert.DeserializeObject<JoinGameResponse>(serverMsg.msg);
+                                                    if (joinGameResponse == null)
+                                                    {
+                                                        MessageBox.Show("Error while joining game room", "Error");
+                                                    }
+
+                                                    // Only activate if we are in the ChooseNameForm
+                                                    if (
+                                                        Globals.hostOrJoin == "JOIN" &&
+                                                        Globals.currentScreen is ChooseNameForm screen)
+                                                    {
+                                                        screen.Invoke((MethodInvoker)delegate
+                                                        {
+                                                            if (joinGameResponse.gameType == "War")
+                                                            {
+                                                                // Create the game room:
+                                                                WarGameRoom gameRoom = new WarGameRoom();
+                                                                gameRoom.AddPlayers(joinGameResponse.players);
+                                                                gameRoom.myPlayerIndex = joinGameResponse.player;
+                                                                Player me = gameRoom.GetPlayer(gameRoom.myPlayerIndex);
+                                                                gameRoom.myPlayerName = me.Name;
+                                                                gameRoom.roomCode = joinGameResponse.roomCode;
+                                                                Globals.gameRoom = gameRoom;
+
+                                                            }
+                                                            else if (joinGameResponse.gameType == "Uno")
+                                                            {
+                                                                MessageBox.Show("Uno not implemented yet", "ToDo");
+                                                            }
+                                                            else if (joinGameResponse.gameType == "Cheat")
+                                                            {
+                                                                MessageBox.Show("Cheat not implemented yet", "ToDo");
+                                                            }
+                                                            else
+                                                            {
+                                                                MessageBox.Show("Error unknown game type", "Error");
+                                                            }
+
+                                                            // Open Lobby:
+                                                            GameLobbyForm lobby = new GameLobbyForm(null);
+                                                            screen.SwitchToForm(lobby);
+                                                        });
+                                                    }
+                                                }
+                                                break;
+                                            case "broadcast-joined-game":
+                                                {
+                                                    JoinGameResponse joinGameResponse = JsonConvert.DeserializeObject<JoinGameResponse>(serverMsg.msg);
+                                                    if (joinGameResponse == null)
+                                                    {
+                                                        MessageBox.Show("Error while joining game room", "Error");
+                                                    } 
+                                                    else
+                                                    {
+                                                        if (Globals.currentScreen is GameLobbyForm screen && Globals.gameRoom is BaseGameRoom gameRoom)
+                                                        {
+                                                            gameRoom.MergePlayers(joinGameResponse.players);
+                                                            screen.Invoke((MethodInvoker)delegate
+                                                            {
+                                                                screen.RefreshLobby();
+                                                            });
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                            case "removed-from-game-none":
+                                                {
+                                                    // TODO: Do nothing
+                                                }
+                                                break;
+                                            case "broadcast-removed-from-game-player":
+                                                {
+                                                    string playerName = serverMsg.msg;
+                                                    if (playerName == "")
+                                                    {
+                                                        MessageBox.Show("Error Unexpected message while player was removed", "Error");
+                                                    }
+                                                    
+                                                    // Remove player:
+                                                    bool removed = false;
+                                                    bool removedMe = false;
+                                                    if (Globals.gameRoom != null)
+                                                    {
+                                                        if (Globals.gameRoom is WarGameRoom gameRoom)
+                                                        {
+                                                            removed = gameRoom.RemovePlayer(playerName);
+                                                            if (playerName == gameRoom.myPlayerName)
+                                                            {
+                                                                removedMe = removed;
+                                                            }
+                                                        }
+                                                        //TODO: Implement more games here.
+                                                    }
+
+                                                    if (removed)
+                                                    {
+                                                        if (Globals.currentScreen is GameLobbyForm screen)
+                                                        {
+                                                            screen.Invoke((MethodInvoker)delegate
+                                                            {
+                                                                screen.RefreshLobby();
+                                                            });
+                                                        }
+                                                        else if (Globals.currentScreen is WarGameForm game)
+                                                        {
+                                                            game.Invoke((MethodInvoker)delegate
+                                                            {
+                                                                game.CloseAndBack();
+                                                            });
+                                                        }
+                                                    }
+
+                                                }
+                                                break;
+                                            case "broadcast-removed-from-game-host":
+                                                {
+                                                    
+                                                    // Close and destroy the active game room:
+                                                    if (Globals.gameRoom != null)
+                                                    {
+                                                        Globals.gameRoom = null;
+                                                    }
+                                                    
+                                                    // Update UI
+                                                    if (Globals.currentScreen is GameLobbyForm screen)
+                                                    {
+                                                        screen.Invoke((MethodInvoker)delegate
+                                                        {
+                                                            screen.CloseAndBack(); // Will not contact server because we destroyed the game room.
+                                                        });
+                                                    }
+                                                    //TODO: implement for other screens:
+                                                }
+                                                break;
+                                            case "broadcast-start-game":
+                                                {
+                                                    string roomCode = serverMsg.msg;
+                                                    
+                                                    if (roomCode == "" || Globals.gameRoom == null)
+                                                    {
+                                                        MessageBox.Show("Error Unexpected message while starting game", "Error");
+                                                    }
+
+                                                    if (
+                                                        Globals.currentScreen is GameLobbyForm screen &&
+                                                        Globals.gameRoom is BaseGameRoom room &&
+                                                        room.roomCode.ToString() == roomCode
+                                                        )
+                                                    {
+                                                        screen.Invoke((MethodInvoker)delegate
+                                                        {
+                                                            switch (room.gameType)
+                                                            {
+                                                                case "War":
+                                                                    {
+                                                                        WarGameForm gameForm = new WarGameForm();
+                                                                        WarGameRoom gameRoom = (WarGameRoom)room;
+                                                                        gameRoom.StartGame();
+                                                                        screen.SwitchToForm(gameForm);
+                                                                    }
+                                                                    break;
+                                                                case "Uno":
+                                                                    {
+                                                                        MessageBox.Show("Uno Game Not supported", "Error");
+                                                                    }
+                                                                    break;
+                                                                case "Cheat":
+                                                                    {
+                                                                        MessageBox.Show("Cheat Game Not supported", "Error");
+                                                                    }
+                                                                    break;
+                                                                // Any other:
+                                                                default:
+                                                                    {
+                                                                        MessageBox.Show("Unknown game type", "Error");
+                                                                    }
+                                                                    break;
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                                break;
+                                                  
+                                            case "broadcast-game-turn":
+                                                {
+
+                                                    WarRoundResponse createGameResponse = JsonConvert.DeserializeObject<WarRoundResponse>(serverMsg.msg);
+                                                    if (createGameResponse == null)
+                                                    {
+                                                        MessageBox.Show("Error proccesing game round response", "Error");
+                                                    }
+
+                                                    if (
+                                                        Globals.currentScreen is WarGameForm screen &&
+                                                        Globals.gameRoom is WarGameRoom room &&
+                                                        room.roomCode == createGameResponse.roomCode
+                                                        )
+                                                    {
+                                                        screen.Invoke((MethodInvoker)delegate
+                                                        {
+                                                            screen.PerfomTurn(createGameResponse);
+                                                        });
+                                                    } else
+                                                    {
+                                                        MessageBox.Show("Error Unexpected message while game turn", "Error");
+                                                    }
                                                 }
                                                 break;
 
@@ -164,18 +384,21 @@ namespace CRS_Client.Networking
                 }
                 catch (Exception e)
                 {
-                    MessageBox.Show("Error: " + e);
-                    Thread.Sleep(1000);
+                    MessageBox.Show("Server is away trying to reconnect again in 5 seconds");
+                    Thread.Sleep(5000);
                 }
             }
+            this.SendMessage("", "disconnect");
+            Thread.Sleep(100);
             client.Close();
         }
 
         //send message over TCP
         public void SendMessage(string msg, string purpose)
         {
-            if (client == null)
-                return;
+            // check if client is disposed:
+            if (client == null || client.Connected == false)
+                    return;
             try
             {
                 NetworkStream stream = client.GetStream();

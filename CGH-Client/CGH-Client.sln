@@ -5,7 +5,7 @@ VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CGH-Client", "CGH-Client.csproj", "{6B0C2E88-9B00-44B5-BB7B-C958754AB8E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CGH-Server", "..\CGH-Server\CGH-Server.csproj", "{539BC9A3-FCE0-4076-83AE-345B5AFCC29F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CGH-Server", "..\CGH-Server\CGH-Server.csproj", "{539BC9A3-FCE0-4076-83AE-345B5AFCC29F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

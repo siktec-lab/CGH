@@ -1,6 +1,6 @@
 ﻿using CGH_Client.Forms;
 using CGH_Client.Utility;
-using CRS_Client.Networking;
+using CGH_Client.Networking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +23,28 @@ namespace CGH_Client
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new SelectGameForm());
+        }
+
+        static void CleanUp()
+        {
+            // Check if we are connected to the server
+            if (Globals.ServerConnector != null && Globals.ServerConnector.isConnectedToServer)
+            {
+                // Disconnect from the server
+                Globals.ServerConnector.Stop();
+            }
+        }
+
+        static void OnApplicationExit(object sender, EventArgs e)
+        {
+            // Call Cleanup:
+            CleanUp();
+        }
+
+        static void OnProcessExit(object sender, EventArgs e)
+        {
+            // Call Cleanup:
+            CleanUp();
         }
     }
 }

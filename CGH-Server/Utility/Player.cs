@@ -15,7 +15,7 @@ namespace CGH_Server.Utility
         public bool isHost { get; set; }
         public bool isDisconnected { get; set; }
         public string selectedCard { get; set; }
-
+        
         public Player()
         {
 

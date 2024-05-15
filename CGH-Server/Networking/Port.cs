@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CRS_Server.Networking
+namespace CGH_Server.Networking
 {
     public class Port
     {

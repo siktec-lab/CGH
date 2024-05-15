@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>CGH_Client.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
@@ -77,6 +80,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\PlayerCard.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\ScreenHeader.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\ScaleablePanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\MainMenuContainer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\MainMenuItem.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Forms\ChooseNameForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -92,20 +110,31 @@
     <Compile Include="Forms\HostOrJoinForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\MainGameForm.cs">
+    <Compile Include="Forms\WarGameForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\SelectGameForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Networking\Client.cs" />
+    <Compile Include="Networking\Messages\GameRoundMessage.cs" />
+    <Compile Include="Networking\Messages\RemoveFromGameMessage.cs" />
+    <Compile Include="Networking\Messages\JoinGameResponse.cs" />
+    <Compile Include="Networking\Messages\JoinGameMessage.cs" />
+    <Compile Include="Networking\Messages\CreateGameMessage.cs" />
+    <Compile Include="Networking\Messages\CreateGameResponse.cs" />
+    <Compile Include="Networking\Messages\WarRoundResponse.cs" />
     <Compile Include="Networking\ServerMsg.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Forms\BaseMovableForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Utility\Functions.cs" />
-    <Compile Include="Utility\GameRoom.cs" />
+    <Compile Include="Utility\BaseGameRoom.cs" />
     <Compile Include="Utility\Globals.cs" />
     <Compile Include="Utility\Player.cs" />
+    <Compile Include="Utility\WarGameRoom.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -151,7 +180,6 @@
     <Content Include="Assets\Icons\createIcon.png" />
     <Content Include="Assets\Icons\addIcon.png" />
     <Content Include="Assets\Icons\joinIcon.png" />
-    <Content Include="Assets\Icons\powerIcon.gif" />
     <Content Include="Assets\Standard_52_Cards\card_back\cardBackBlue.png" />
     <Content Include="Assets\Standard_52_Cards\card_back\cardBackGreen.png" />
     <Content Include="Assets\Standard_52_Cards\card_back\cardBackRed.png" />
@@ -263,6 +291,5 @@
     <Content Include="Assets\Uno\yellow\block_yellow.png" />
     <Content Include="Assets\Uno\yellow\inverse_yellow.png" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,4 +1,5 @@
-﻿using CGH_Client.Utility;
+﻿using CGH_Client.Controls;
+using CGH_Client.Utility;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -9,143 +10,89 @@ using System.Windows.Forms;
 
 namespace CGH_Client.Forms
 {
-    public class HostOrJoinForm : Form
+    public class HostOrJoinForm : BaseMovableForm
     {
 
-        Panel createPanel, joinPanel;
-        PictureBox createPB, joinPB, closeBtnPB;
-        Label createLB, joinLB, mainLB, selectedGameLB;
-
-        public HostOrJoinForm()
+        ScreenHeader header;
+        MainMenuContainer mainMenu;
+        MainMenuContainer footerMenu;
+        
+        public HostOrJoinForm(object parent, string GameNameDisplay = "לא ידוע") : base(
+            parent: parent,
+            name: "HostOrJoinForm",
+            backgroundImagePath: Globals.ServerPathToFile("Assets\\Backgrounds", "background_2.png"),
+            scale: 0.7,
+            movable: true
+        )
         {
 
-            StartPosition = FormStartPosition.CenterScreen;
-            Size = new Size(1495, 840);
-            BackgroundImage = Image.FromFile(Globals.baseDirectory + @"\Assets\Backgrounds\background_2.png");
-            BackgroundImageLayout = ImageLayout.Center;
-            FormBorderStyle = FormBorderStyle.None;
+            // Screen header:
+            this.header = new ScreenHeader(
+                parent      : this.Size,
+                text        : this.PrepareHeaderText("המשחק הנבחר", GameNameDisplay),
+                fontSize    : 20F
+            );
+            this.Controls.Add(this.header);
 
-            mainLB = new Label()
-            {
-                AutoSize = true,
-                Text = ":המשחק הנבחר",
-                Font = new Font("Varela Round", 18F, FontStyle.Bold),
-                BackColor = Color.Transparent,
-                ForeColor = Color.White,
-                Location = new Point(0, 25)
-            };
-            Functions.CenterControlHorizontally(this, mainLB);
-            Controls.Add(mainLB);
+            // Main Menu of mini games:
+            this.mainMenu = new MainMenuContainer(
+                parent: this.Size,
+                alignment: "center",
+                horizontalRatio: 0.5,
+                verticalRatio: 0.25,
+                totalItems: 2,
+                itemPadding: 60
+            );
 
-            selectedGameLB = new Label()
-            {
-                AutoSize = true,
-                Text = "",
-                Font = new Font("Varela Round", 18F, FontStyle.Bold),
-                BackColor = Color.Transparent,
-                ForeColor = Color.White,
-                Location = new Point(0, 65)
-            };
-            selectedGameLB.Text = Globals.gameChoosed;
-            Functions.CenterControlHorizontally(this, selectedGameLB);
-            Controls.Add(selectedGameLB);
+            // Join a game panel:
+            MainMenuItem joinMenuItem = new MainMenuItem(
+                text: "הצטרף לחדר",
+                imagePath: Globals.ServerPathToFile("Assets\\Icons", "joinIcon.png")
+            );
+            joinMenuItem.ClickAny += JoinPanel_Click;
+            this.mainMenu.AddItem(joinMenuItem, 0);
+            this.Controls.Add(this.mainMenu);
 
-            joinPanel = new Panel()
-            {
-                Size = new Size(192, 230),
-                Location = new Point(363, 270),
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-            Controls.Add(joinPanel);
-            joinPanel.Click += JoinPanel_Click;
+            // Create a game panel:
+            MainMenuItem createMenuItem = new MainMenuItem(
+                text: "צור חדר",
+                imagePath: Globals.ServerPathToFile("Assets\\Icons", "createIcon.png")
+            );
+            createMenuItem.ClickAny += CreatePanel_Click;
+            this.mainMenu.AddItem(createMenuItem, 1);
 
-            joinPB = new PictureBox()
-            {
-                Size = new Size(192, 192),
-                Location = new Point(0, 0),
-                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Icons\joinIcon.png"),
-                SizeMode = PictureBoxSizeMode.Zoom,
-                Cursor = Cursors.Hand
-            };
-            joinPanel.Controls.Add(joinPB);
-            joinPB.Click += JoinPanel_Click;
+            // Footer Menu:
+            this.footerMenu = new MainMenuContainer(
+                parent: new Size(this.Width, this.Height - 15),
+                alignment: "bottom-left",
+                horizontalRatio: 0.3,
+                fixedHeight: 80,
+                totalItems: 5,
+                itemPadding: 0
+            );
+            this.Controls.Add(this.footerMenu);
 
-            joinLB = new Label()
-            {
-                AutoSize = true,
-                Text = "הצטרפות",
-                Font = new Font("Varela Round", 25F, FontStyle.Bold),
-                BackColor = Color.Transparent,
-                ForeColor = Color.White,
-                Location = new Point(0, 180),
-                Cursor = Cursors.Hand
-            };
-            Functions.CenterControlHorizontally(joinPanel, joinLB);
-            joinPanel.Controls.Add(joinLB);
-            joinLB.Click += JoinPanel_Click;
-
-            createPanel = new Panel()
-            {
-                Size = new Size(192, 230),
-                Location = new Point(939, 270),
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-            Controls.Add(createPanel);
-            createPanel.Click += CreatePanel_Click;
-
-            createPB = new PictureBox()
-            {
-                Size = new Size(192, 192),
-                Location = new Point(0, 0),
-                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Icons\createIcon.png"),
-                SizeMode = PictureBoxSizeMode.Zoom,
-                Cursor = Cursors.Hand
-            };
-            createPanel.Controls.Add(createPB);
-            createPB.Click += CreatePanel_Click;
-
-            createLB = new Label()
-            {
-                AutoSize = true,
-                Text = "יצירה",
-                Font = new Font("Varela Round", 25F, FontStyle.Bold),
-                BackColor = Color.Transparent,
-                ForeColor = Color.White,
-                Location = new Point(0, 180),
-                Cursor = Cursors.Hand
-            };
-            Functions.CenterControlHorizontally(createPanel, createLB);
-            createPanel.Controls.Add(createLB);
-            createLB.Click += CreatePanel_Click;
-
-            closeBtnPB = new PictureBox()
-            {
-                Size = new Size(40, 40),
-                Location = new Point(50, 50),
-                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Icons\powerIcon.gif"),
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-            Controls.Add(closeBtnPB);
-            closeBtnPB.Click += CloseBtnPB_Click;
-
-            this.FormClosed += HostOrJoinForm_FormClosed;
+            // Back button:
+            MainMenuItem backMenuItem = new MainMenuItem(
+                text: "חזור",
+                imagePath: Globals.ServerPathToFile("Assets\\Icons", "homeIcon.png"),
+                fontSize: 16F
+            );
+            backMenuItem.ClickAny += BackButton_Click;
+            this.footerMenu.AddItem(backMenuItem, 0);
 
         }
 
-        private void CloseBtnPB_Click(object sender, EventArgs e)
+        private string PrepareHeaderText(string headerTxt, string nameTxt)
         {
-            SelectGameForm selectGameForm = new SelectGameForm();
-            this.Hide();
-            selectGameForm.Show();
+            // Concatenate the two and return
+            return headerTxt + ": \"" + nameTxt + "\"";
         }
-
+        
         private void JoinPanel_Click(object sender, EventArgs e)
         {
             Globals.hostOrJoin = "JOIN";
-            EnterRoomCodeForm enterRoomCodeForm = new EnterRoomCodeForm();
+            EnterRoomCodeForm enterRoomCodeForm = new EnterRoomCodeForm(this);
             this.Hide();
             enterRoomCodeForm.Show();
         }
@@ -153,16 +100,15 @@ namespace CGH_Client.Forms
         private void CreatePanel_Click(object sender, EventArgs e)
         {
             Globals.hostOrJoin = "HOST";
-            ChooseNameForm chooseNameForm = new ChooseNameForm();
+            ChooseNameForm chooseNameForm = new ChooseNameForm(this);
             this.Hide();
             chooseNameForm.Show();
         }
 
-        private void HostOrJoinForm_FormClosed(object sender, FormClosedEventArgs e)
+        private void BackButton_Click(object sender, EventArgs e)
         {
-            SelectGameForm selectGameForm = new SelectGameForm();
-            this.Hide();
-            selectGameForm.Show();
+            Globals.hostOrJoin = "";
+            this.CloseAndBack();
         }
     }
 }

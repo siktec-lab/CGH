@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using CGH_Server.Utility;
 
-namespace CRS_Server.Networking
+namespace CGH_Server.Networking
 {
     public class Router
     {
@@ -32,6 +32,7 @@ namespace CRS_Server.Networking
         // Establishes TCP connection
         private void Start()
         {
+
             listener = new TcpListener(IPAddress.Any, port);
             listener.Start();
 

@@ -199,9 +199,9 @@ namespace CGH_Client.Forms
             var pb = sender as PictureBox;
             Globals.charTagSelected = int.Parse(pb.Tag.ToString());
             Globals.charImgSelected = pb.Image;
-            ChooseNameForm chooseNameForm = new ChooseNameForm();
-            this.Hide();
-            chooseNameForm.Show();
+            //ChooseNameForm chooseNameForm = new ChooseNameForm(this);
+            this.Close();
+            //chooseNameForm.Show();
         }
     }
 }

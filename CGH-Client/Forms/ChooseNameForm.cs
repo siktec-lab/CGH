@@ -1,4 +1,6 @@
-﻿using CGH_Client.Utility;
+﻿using CGH_Client.Controls;
+using CGH_Client.Utility;
+using CGH_Client.Networking.Messages;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,48 +14,50 @@ using System.Windows.Forms;
 
 namespace CGH_Client.Forms
 {
-    public class ChooseNameForm : Form
+    public class ChooseNameForm : BaseMovableForm
     {
-
-        Label chooseNameLB;
+        ScreenHeader header;
+        MainMenuContainer footerMenu;
         TextBox chooseNameTB;
         PictureBox choosePlayerCardPB;
         Button chooseNameB;
 
-        public ChooseNameForm()
+        public int withCode { get; set; } = 0;
+
+        public ChooseNameForm(object parent) : base(
+            parent: parent,
+            name: "ChooseNameForm",
+            backgroundImagePath: Globals.ServerPathToFile("Assets\\Backgrounds", "background_2.png"),
+            scale: 0.25,
+            movable: true
+        )
         {
 
-            StartPosition = FormStartPosition.CenterScreen;
-            Size = new Size(300, 275);
-            BackgroundImage = Image.FromFile(Globals.baseDirectory + @"\Assets\Backgrounds\background_2.png");
-            BackgroundImageLayout = ImageLayout.Center;
-            FormBorderStyle = FormBorderStyle.None;
-
-            chooseNameLB = new Label()
-            {
-                AutoSize = true,
-                Text = "בחר שם",
-                Font = new Font("Varela Round", 18F, FontStyle.Bold),
-                BackColor = Color.Transparent,
-                ForeColor = Color.White,
-                Location = new Point(0, 25)
-            };
-            Functions.CenterControlHorizontally(this, chooseNameLB);
-            Controls.Add(chooseNameLB);
-
+            // Screen header:
+            this.header = new ScreenHeader(
+                parent: this.Size,
+                text: "בחר שם ותמונה",
+                fontSize: 20F
+            );
+            this.Controls.Add(this.header);
+            
+            // Name Input:
             chooseNameTB = new TextBox()
             {
-                Size = new Size(150, 50),
-                Location = new Point(0, 75)
+                Size = new Size(this.Width / 2, 100),
+                Location = new Point(0, 75),
+                BorderStyle = BorderStyle.FixedSingle,
+                Font = new Font("Varela Round", 16F, FontStyle.Bold),
             };
             Functions.CenterControlHorizontally(this, chooseNameTB);
             Controls.Add(chooseNameTB);
 
+            // Button for avater selection:
             choosePlayerCardPB = new PictureBox()
             {
                 Size = new Size(50, 50),
                 Location = new Point(0, 125),
-                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Icons\addIcon.png"),
+                Image = Image.FromFile(Globals.ServerPathToFile("Assets\\Icons", "addIcon.png")),
                 SizeMode = PictureBoxSizeMode.Zoom,
                 BackColor = Color.Transparent,
                 Cursor = Cursors.Hand
@@ -66,47 +70,64 @@ namespace CGH_Client.Forms
             {
                 Size = new Size(100, 50),
                 Location = new Point(0, 200),
-                Text = "להיכנס"
+                Text = Globals.hostOrJoin == "HOST" ? "צור משחק" : "הצטרף למשחק",
+                Font = new Font("Varela Round", 12F, FontStyle.Bold)
             };
             Functions.CenterControlHorizontally(this, chooseNameB);
             Controls.Add(chooseNameB);
             chooseNameB.Click += ChooseNameB_Click;
 
+            this.SetPalyerAvatarSelection();
+
+            // Footer Menu:
+            this.footerMenu = new MainMenuContainer(
+                parent: new Size(this.Width, this.Height - 15),
+                alignment: "top-left",
+                horizontalRatio: 0.24,
+                fixedHeight: 55,
+                totalItems: 2,
+                itemPadding: 0
+            );
+            this.Controls.Add(this.footerMenu);
+
+            // Back button:
+            MainMenuItem backMenuItem = new MainMenuItem(
+                text: "חזור",
+                imagePath: Globals.ServerPathToFile("Assets\\Icons", "homeIcon.png"),
+                fontSize: 11F
+            );
+            backMenuItem.ClickAny += BackButton_Click;
+            this.footerMenu.AddItem(backMenuItem, 0);
+
+            // Destruct data before leaving:
+            this.FormClosing += (s, args) => {
+                this.withCode = 0;
+            };
+        }
+
+        private void SetPalyerAvatarSelection()
+        {
             if (Globals.charImgSelected == null)
             {
-                choosePlayerCardPB.Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Icons\addIcon.png");
+                choosePlayerCardPB.Image = Image.FromFile(Globals.ServerPathToFile("Assets\\Icons", "addIcon.png"));
             }
-
             else
             {
                 choosePlayerCardPB.Image = Globals.charImgSelected;
             }
-
-            FormClosed += ChooseNameForm_FormClosed;
-
         }
-
-        private void ChooseNameForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            HostOrJoinForm hostOrJoinForm = new HostOrJoinForm();
-            this.Hide();
-            hostOrJoinForm.Show();
-        }
-
+        
         private void ChooseNameB_Click(object sender, EventArgs e)
         {
             StringBuilder sb = new StringBuilder();
-            bool isNameOk = false;
-            bool isPictureOk = false;
+            bool isNameOk = true;
+            bool isPictureOk = true;
 
             Regex nameRegex = new Regex("([A-Za-z])\\w+");
 
-            if (nameRegex.IsMatch(chooseNameTB.Text) && Functions.isNameAvailable(chooseNameTB.Text))
-                isNameOk = true;
-
-            else
+            if (!nameRegex.IsMatch(chooseNameTB.Text) && Functions.isNameAvailable(chooseNameTB.Text))
             {
-                sb.AppendLine("שם לא תקין, השם צריך להיות רציף וללא רווחים או סימנים או שהשם תפוס");
+                sb.AppendLine("שם לא תקין, השם צריך להיות רציף וללא רווחים, סימני פיסוק או שהשם תפוס");
                 isNameOk = false;
             }
 
@@ -115,57 +136,72 @@ namespace CGH_Client.Forms
                 sb.AppendLine("לא בחרת תמונה לשחקן");
                 isPictureOk = false;
             }
-
-            else
-                isPictureOk = true;
-
+            
             if (isNameOk && isPictureOk)
             {
-                Globals.charName = chooseNameTB.Text;
-                Player player = new Player();
-                player.Name = Globals.charName;
-                player.ImgCharNum = Globals.charTagSelected;
-                player.isDisconnected = false;
-                player.selectedCard = "";
-
                 if (Globals.hostOrJoin == "HOST")
                 {
-                    player.isHost = true;
-                    string playerStr = JsonConvert.SerializeObject(player);
-                    Globals.ServerConnector.SendMessage(Globals.gameChoosed + "{0}" + playerStr, "createGameLobby");
+                    CreateGameMessage createGameMessage = new CreateGameMessage(){
+                        gameType        = Globals.gameChoosed,
+                        playerName      = chooseNameTB.Text,
+                        playerAvatar    = Globals.charTagSelected
+                    };
+                    
+                    Globals.ServerConnector.SendMessage(
+                        msg     : JsonConvert.SerializeObject(createGameMessage), 
+                        purpose : "createGameLobby"
+                    );
+                    Thread.Sleep(100);
                 }
-
-                if (Globals.hostOrJoin == "JOIN")
+                else if (Globals.hostOrJoin == "JOIN" && this.withCode > 0)
                 {
-                    player.isHost = false;
-                    string playerStr = JsonConvert.SerializeObject(player);
-                    Globals.ServerConnector.SendMessage(Globals.gameChoosed + "-" + Globals.gameCode + "{0}" + playerStr, "joinPlayerToGame");
-                }
-            }
 
+                    JoinGameMessage joinGameMessage = new JoinGameMessage()
+                    {
+                        gameType        = Globals.gameChoosed,
+                        playerName      = chooseNameTB.Text,
+                        playerAvatar    = Globals.charTagSelected,
+                        gameCode        = this.withCode
+                    };
+
+                    Globals.ServerConnector.SendMessage(
+                        msg     : JsonConvert.SerializeObject(joinGameMessage),
+                        purpose : "joinPlayerToGame"
+                    );
+                    Thread.Sleep(100);
+                } else {
+
+                    // Show Error message:
+                    MessageBox.Show("אירעה שגיאה אנא נסה שנית לאחר אתחול המשחק", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.CloseAndBack();
+                }
+
+                //Globals.gameLobbyForm = new GameLobbyForm();
+                //this.Hide();
+                //Globals.gameLobbyForm.Show();
+            }
             else
             {
-                MessageBox.Show(sb.ToString());
+                MessageBox.Show(sb.ToString(), "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 sb.Clear();
-            }
-
-            while (true)
-            {
-                if (Globals.isGameCreated)
-                {
-                    Globals.gameLobbyForm = new GameLobbyForm();
-                    this.Hide();
-                    Globals.gameLobbyForm.Show();
-                    break;
-                }
             }
         }
 
         private void ChoosePlayerCardPB_Click(object sender, EventArgs e)
         {
             ChoosePlayerCardForm choosePlayerCardForm = new ChoosePlayerCardForm();
+            choosePlayerCardForm.FormClosed += (s, args) =>
+            {
+                this.SetPalyerAvatarSelection();
+                this.Show();
+            };
             this.Hide();
             choosePlayerCardForm.Show();
+        }
+
+        private void BackButton_Click(object sender, EventArgs e)
+        {
+            this.CloseAndBack();
         }
     }
 }

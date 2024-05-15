@@ -3,9 +3,11 @@ using System.Net;
 using System.Text;
 using System.Net.Http;
 using CGH_Server.Utility;
+using CGH_Server.Networking.Messages;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
-namespace CRS_Server.Networking
+namespace CGH_Server.Networking
 {
     public class TCP
     {
@@ -83,7 +85,7 @@ namespace CRS_Server.Networking
 
                             List<string> gameCards = new List<string>();
 
-                            if (msgReceived.Contains("\n"))
+                            if (msgReceived.Contains("}{"))
                             {
                                 continue;
                             }
@@ -101,253 +103,350 @@ namespace CRS_Server.Networking
                             switch (clientMsg.purpose)
                             {
                                 case "createGameLobby":
-
-                                    string[] msgParts = clientMsg.msg.Split("{0}");
-
-                                    Random rand = new Random();
-
-                                    string gameType = msgParts[0];
-                                    string gameCode = rand.Next(100000, 1000000).ToString();
-                                    string playerStr = msgParts[1];
-
-                                    string gameLobby = "";
-
-                                    Player playerCreate = JsonConvert.DeserializeObject<Player>(playerStr);
-
-                                    switch (gameType)
                                     {
-                                        case "War":
+                                        // Validtae Message:
+                                        if (clientMsg.msg == null)
+                                        {
+                                            SendMessage("Bad Request", "Error");
+                                            continue;
+                                        }
 
-                                            WarGameRoom warGameRoom = new WarGameRoom()
-                                            {
-                                                gameType = gameType,
-                                                cardPlayed = "",
-                                                currentPlayerTurn = "",
-                                                players = new List<Player>() { playerCreate }
-                                            };
+                                        // Parse:
+                                        CreateGameRequest? createGameRequest = JsonConvert.DeserializeObject<CreateGameRequest>(clientMsg.msg);
 
-                                            warGameRoom.roomCode = int.Parse(gameCode);
-                                            gameLobby = JsonConvert.SerializeObject(warGameRoom);
+                                        // Validate Game Request
+                                        if (createGameRequest == null || createGameRequest.playerName == null || createGameRequest.gameType == null)
+                                        {
+                                            SendMessage("Bad Request", "Error");
+                                            continue;
+                                        }
 
-                                            break;
+                                        GameRoom gameRoom = new GameRoom();
+                                        gameRoom.gameType = createGameRequest.gameType;
+                                        gameRoom.AddPlayer(createGameRequest.playerName, createGameRequest.playerAvatar);
 
-                                        default:
+                                        //string fileNameCreate = gameRoom.gameType + "-" + gameRoom.roomCode + ".json";
+                                        string pathTo = Globals.ServerPathToFile("GameLobbies", gameRoom.gameType + "-" + gameRoom.roomCode + ".json");
+                                        if (!File.Exists(pathTo))
+                                        {
+                                            // Save Game Room:
+                                            gameRoom.SaveGameToFile();
 
-                                            GameRoom gameRoom = new GameRoom()
-                                            {
-                                                gameType = gameType,
-                                                cardPlayed = "",
-                                                currentPlayerTurn = "",
-                                                players = new List<Player>() { playerCreate }
-                                            };
+                                            Console.ResetColor();
+                                            Console.Write("[");
+                                            Console.ForegroundColor = ConsoleColor.Green;
+                                            Console.Write("Server");
+                                            Console.ResetColor();
+                                            Console.WriteLine($"] {port}: msg: Game Room created successfully. purpose: created-game-room");
 
-                                            gameRoom.roomCode = int.Parse(gameCode);
-                                            gameLobby = JsonConvert.SerializeObject(gameRoom);
+                                            // Add to address book:
+                                            Globals.phoneBook.AddAddress(
+                                                gameCode: gameRoom.roomCode,
+                                                user: createGameRequest.playerName,
+                                                client: tcpClient
+                                            );
 
-                                            break;
+                                            CreateGameResponse createGameResponse = new CreateGameResponse();
+                                            createGameResponse.From(gameRoom, createGameRequest.playerName);
+                                            SendMessage(JsonConvert.SerializeObject(createGameResponse), "created-game-room");
+                                        }
+                                        else
+                                        {
+                                            Console.ResetColor();
+                                            Console.Write("[");
+                                            Console.ForegroundColor = ConsoleColor.Green;
+                                            Console.Write("Server");
+                                            Console.ResetColor();
+                                            Console.WriteLine($"] {port}: msg: Game Room already created try again. purpose: Error");
+                                            SendMessage("Game Room already created try again.", "Error");
+                                        }
                                     }
-
-                                    string fileNameCreate = gameType + "-" + gameCode + ".json";
-
-                                    if (!File.Exists(Globals.baseDirectory + @"\GameLobbies\" + fileNameCreate))
-                                    {
-                                        File.WriteAllText(Globals.baseDirectory + @"\GameLobbies\" + fileNameCreate, gameLobby);
-
-                                        Console.ResetColor();
-                                        Console.Write("[");
-                                        Console.ForegroundColor = ConsoleColor.Green;
-                                        Console.Write("Server");
-                                        Console.ResetColor();
-                                        Console.WriteLine($"] {port}: msg: Game Room created successfully. purpose: Success");
-                                        SendMessage(gameType + "-" + gameCode, "gameCreated");
-                                    }
-
-                                    else
-                                    {
-                                        Console.ResetColor();
-                                        Console.Write("[");
-                                        Console.ForegroundColor = ConsoleColor.Green;
-                                        Console.Write("Server");
-                                        Console.ResetColor();
-                                        Console.WriteLine($"] {port}: msg: Game Room already created try again. purpose: Error");
-                                        SendMessage("", "gameNotCreated");
-                                    }
-
                                     break;
 
                                 case "joinPlayerToGame":
-
-                                    Player playerJoin = JsonConvert.DeserializeObject<Player>(clientMsg.msg);
-                                    bool playerFound = false;
-
-                                    string fileNameJoin = playerJoin.gameID + ".json";
-
-                                    string fileLines = File.ReadAllText(Globals.baseDirectory + @"\GameLobbies\" + fileNameJoin);
-                                    GameRoom tempGameRoomJoin = JsonConvert.DeserializeObject<GameRoom>(fileLines);
-
-                                    for (int i = 0; i < tempGameRoomJoin.players.Count; i++)
                                     {
-                                        if (tempGameRoomJoin.players[i].Name == playerJoin.Name)
+                                        // Validtae Message:
+                                        if (clientMsg.msg == null)
                                         {
-                                            playerFound = true;
-                                            tempGameRoomJoin.players[i].isDisconnected = false;
+                                            SendMessage("Bad Request", "Error");
+                                            continue;
+                                        }
+
+                                        // Parse:
+                                        JoinGameRequest? joinGameRequest = JsonConvert.DeserializeObject<JoinGameRequest>(clientMsg.msg);
+                                        
+                                        // Validate Game Request
+                                        if (joinGameRequest == null || joinGameRequest.playerName == null || joinGameRequest.gameType == null || joinGameRequest.gameCode == 0)
+                                        {
+                                            SendMessage("Bad Request", "Error");
+                                            continue;
+                                        }
+
+                                        // The game room:
+                                        GameRoom? gameRoomToJoin = Globals.GetGameRoom(joinGameRequest.gameType, joinGameRequest.gameCode);
+                                        if (gameRoomToJoin == null)
+                                        {
+                                            SendMessage("Game Room not found", "Error");
+                                            continue;
+                                        }
+
+                                        // Make sure the game is not in play mode:
+                                        if (gameRoomToJoin.gameStarted)
+                                        {
+                                            SendMessage("Game already started", "Error");
+                                            continue;
+                                        }
+
+                                        // Add the player to the game room:
+                                        gameRoomToJoin.AddPlayer(joinGameRequest.playerName, joinGameRequest.playerAvatar);
+
+                                        // Save Game Room:
+                                        gameRoomToJoin.SaveGameToFile();
+
+                                        // Add to address book:
+                                        Globals.phoneBook.AddAddress(
+                                            gameCode: gameRoomToJoin.roomCode,
+                                            user: joinGameRequest.playerName,
+                                            client: tcpClient
+                                        );
+                                        
+                                        //Response:
+                                        JoinGameResponse joinGameResponse = new JoinGameResponse();
+                                        joinGameResponse.From(gameRoomToJoin, joinGameRequest.playerName);
+
+                                        //Report directly to the player:
+                                        SendMessage(JsonConvert.SerializeObject(joinGameResponse), "joined-game-room");
+
+                                        //Report to all:
+                                        gameRoomToJoin.SendMessageToAll(
+                                            msg     : JsonConvert.SerializeObject(joinGameResponse), 
+                                            purpose : "broadcast-joined-game",
+                                            exclude : new List<string> { joinGameRequest.playerName }
+                                        );
+                                    }
+                                    break;
+                                
+                                case "isRoomAvailable":
+                                    {
+                                        // Validtae Message:
+                                        if (clientMsg.msg == null)
+                                        {
+                                            SendMessage("Bad Request", "Error");
+                                            continue;
+                                        }
+
+                                        // Normalize:
+                                        string file = Globals.FilterGameRoomAndBuildPath(clientMsg.msg);
+                                        
+                                        // Validate Game Exists:
+                                        if (File.Exists(Globals.ServerPathToFile("GameLobbies", file)))
+                                        {
+                                            SendMessage("True", "room-availability");
+                                        }
+                                        else
+                                        {
+                                            SendMessage("False", "room-availability");
                                         }
                                     }
-
-                                    if (!playerFound)
-                                    {
-                                        tempGameRoomJoin.players.Add(playerJoin);
-                                    }
-
-                                    string newFileLines = JsonConvert.SerializeObject(tempGameRoomJoin);
-                                    File.WriteAllText(Globals.baseDirectory + @"\GameLobbies\" + fileNameJoin, newFileLines);
-
-                                    break;
-
-                                case "isRoomAvailable":
-
-                                    string fileNameCheckRoom = clientMsg.msg + ".json";
-
-                                    if (File.Exists(Globals.baseDirectory + @"\GameLobbies\" + fileNameCheckRoom))
-                                    {
-                                        SendMessage("True", "isRoomAvailable");
-                                    }
-
-                                    else
-                                    {
-                                        SendMessage("False", "isRoomAvailable");
-                                    }
-
-                                    break;
-
-                                case "getGameLobby":
-
-                                    string fileLinesGGL = File.ReadAllText(Globals.baseDirectory + @"\GameLobbies\" + clientMsg.msg + ".json");
-
-                                    SendMessage(fileLinesGGL, "returnedGameLobby");
-
                                     break;
 
                                 case "removeFromGame":
-
-                                    Player tempPlayerRemove = JsonConvert.DeserializeObject<Player>(clientMsg.msg);
-
-                                    string fileNameRemove = tempPlayerRemove.gameID + ".json";
-
-                                    string fileLinesRemove = File.ReadAllText(Globals.baseDirectory + @"\GameLobbies\" + fileNameRemove);
-                                    GameRoom tempGameRoomRemove = JsonConvert.DeserializeObject<GameRoom>(fileLinesRemove);
-
-                                    if (tempPlayerRemove.isHost)
                                     {
-                                        File.Delete(Globals.baseDirectory + @"\GameLobbies\" + fileNameRemove);
-                                        for (int i = 0; i < tempGameRoomRemove.players.Count; i++)
+                                        // Validtae Message:
+                                        if (clientMsg.msg == null)
                                         {
-                                            Globals.ClientTCPS[i].SendMessage(tempPlayerRemove.gameID, "hostDisconnected");
-                                        }
-                                    }
-
-                                    else
-                                    {
-                                        for (int i = 0; i < tempGameRoomRemove.players.Count; i++)
-                                        {
-                                            if (tempGameRoomRemove.players[i].Name == tempPlayerRemove.Name)
-                                            {
-                                                tempGameRoomRemove.players[i].isDisconnected = true;
-                                            }
+                                            SendMessage("Bad Request", "Error");
+                                            continue;
                                         }
 
-                                        string newFileLinesRemove = JsonConvert.SerializeObject(tempGameRoomRemove);
-                                        File.WriteAllText(Globals.baseDirectory + @"\GameLobbies\" + fileNameRemove, newFileLinesRemove);
+                                        // Parse:
+                                        RemoveFromGameRequest? removeFromGameRequest = JsonConvert.DeserializeObject<RemoveFromGameRequest>(clientMsg.msg);
 
+                                        // Validate Game Request
+                                        if (
+                                            removeFromGameRequest == null ||
+                                            removeFromGameRequest.playerName == null ||
+                                            removeFromGameRequest.playerName == "" ||
+                                            removeFromGameRequest.gameType == null ||
+                                            removeFromGameRequest.gameType == "None" ||
+                                            removeFromGameRequest.gameCode == 0)
+                                        {
+                                            SendMessage("Bad Request", "Error");
+                                            continue;
+                                        }
+
+                                        // The game room:
+                                        GameRoom? gameRoomToJoin = Globals.GetGameRoom(removeFromGameRequest.gameType, removeFromGameRequest.gameCode);
+                                        if (gameRoomToJoin == null)
+                                        {
+                                            SendMessage("", "removed-from-game-none");
+                                            continue;
+                                        }
+
+                                        // The player: 
+                                        Player? playerToRemove = gameRoomToJoin.GetPlayer(removeFromGameRequest.playerName);
+                                        if (playerToRemove == null)
+                                        {
+                                            SendMessage("", "removed-from-game-none");
+                                            continue;
+                                        }
+
+                                        // If the player is the host:
+                                        if (playerToRemove.isHost)
+                                        {
+                                            // Remove the game room:
+                                            File.Delete(Globals.ServerPathToFile("GameLobbies", Globals.FilterGameRoomAndBuildPath(removeFromGameRequest.gameType, removeFromGameRequest.gameCode)));
+                                            
+                                            // Let the players know:
+                                            gameRoomToJoin.SendMessageToAll(
+                                                msg: removeFromGameRequest.playerName,
+                                                purpose: "broadcast-removed-from-game-host"
+                                            );
+                                    
+                                            // Remove the players and from the address book:
+                                            gameRoomToJoin.RemoveAllPlayers();
+                                        }
+                                        else
+                                        {
+                                            // Remove the player:
+                                            gameRoomToJoin.RemovePlayer(removeFromGameRequest.playerName);
+
+                                            // Save Game Room:
+                                            gameRoomToJoin.SaveGameToFile();
+
+                                            gameRoomToJoin.SendMessageToAll(
+                                                msg: removeFromGameRequest.playerName,
+                                                purpose: "broadcast-removed-from-game-player",
+                                                exclude: new List<string> { removeFromGameRequest.playerName } // Probably not required but just in case
+                                            );
+                                        }
                                     }
-
                                     break;
 
                                 case "deleteGame":
-
-                                    string fileNameDelete = clientMsg.msg + ".json";
-
-                                    string fileLinesDelete = File.ReadAllText(Globals.baseDirectory + @"\GameLobbies\" + fileNameDelete);
-
-                                    GameRoom tempGameRoomDelete = JsonConvert.DeserializeObject<GameRoom>(fileLinesDelete);
-                                    for (int i = 0; i < tempGameRoomDelete.players.Count; i++)
                                     {
-                                        Globals.ClientTCPS[i].SendMessage(tempGameRoomDelete.gameType + "-" + tempGameRoomDelete.roomCode, "gameDeleted");
-                                    }
+                                        /*string fileNameDelete = clientMsg.msg + ".json";
 
-                                    File.Delete(Globals.baseDirectory + @"\GameLobbies\" + fileNameDelete);
+                                        string fileLinesDelete = File.ReadAllText(Globals.baseDirectory + @"\GameLobbies\" + fileNameDelete);
 
-                                    break;
-
-                                case "gameStarted":
-
-                                    string fileLinesGameStart = File.ReadAllText(Globals.baseDirectory + @"\GameLobbies\" + clientMsg.msg + ".json");
-
-                                    GameRoom tempGameStart = JsonConvert.DeserializeObject<GameRoom>(fileLinesGameStart);
-
-                                    for (int i = 0; i < tempGameStart.players.Count; i++)
-                                    {
-                                        Globals.ClientTCPS[i].SendMessage(tempGameStart.gameType + "-" + tempGameStart.roomCode, "gameStarted");
-                                        Thread.Sleep(100);
-                                    }
-
-                                    break;
-
-                                case "changeSelectedCard":
-
-                                    Random r = new Random();
-                                    int randomCard = r.Next(0, Globals.gameCards.Count);
-
-                                    string[] msgPartsChange = clientMsg.msg.Split("{0}");
-
-                                    string playerName = msgPartsChange[0];
-                                    string gameIDChange = msgPartsChange[1];
-                                    string selectedCard = Globals.gameCards[randomCard];
-
-                                    Globals.gameCards.Remove(selectedCard);
-
-                                    string fileLinesChangeSelectedCard = File.ReadAllText(Globals.baseDirectory + @"\GameLobbies\" + gameIDChange + ".json");
-
-                                    GameRoom tempGameChangeSelectedCard = JsonConvert.DeserializeObject<GameRoom>(fileLinesChangeSelectedCard);
-
-                                    for (int i = 0; i < tempGameChangeSelectedCard.players.Count; i++)
-                                    {
-                                        if (tempGameChangeSelectedCard.players[i].Name == playerName)
+                                        GameRoom tempGameRoomDelete = JsonConvert.DeserializeObject<GameRoom>(fileLinesDelete);
+                                        for (int i = 0; i < tempGameRoomDelete.players.Count; i++)
                                         {
-                                            tempGameChangeSelectedCard.players[i].selectedCard = selectedCard;
-                                            if (i+1 >= tempGameChangeSelectedCard.players.Count)
-                                            {
-                                                tempGameChangeSelectedCard.currentPlayerTurn = tempGameChangeSelectedCard.players[0].Name;
-                                            }
-
-                                            else
-                                            {
-                                                tempGameChangeSelectedCard.currentPlayerTurn = tempGameChangeSelectedCard.players[i+1].Name;
-                                            }
+                                            Globals.ClientTCPS[i].SendMessage(tempGameRoomDelete.gameType + "-" + tempGameRoomDelete.roomCode, "gameDeleted");
                                         }
+
+                                        File.Delete(Globals.baseDirectory + @"\GameLobbies\" + fileNameDelete);*/
                                     }
+                                    break;
+                                case "startGameRoom":
+                                    {
+                                        // Validtae Message:
+                                        if (clientMsg.msg == null)
+                                        {
+                                            SendMessage("Bad Request", "Error");
+                                            continue;
+                                        }
 
-                                    gameCards.Add(selectedCard);
+                                        // Normalize:
+                                        string file = Globals.FilterGameRoomAndBuildPath(clientMsg.msg);
 
-                                    string newFileLinesChanged = JsonConvert.SerializeObject(tempGameChangeSelectedCard);
-                                    File.WriteAllText(Globals.baseDirectory + @"\GameLobbies\" + gameIDChange + ".json", newFileLinesChanged);
 
+                                        // The game room:
+                                        GameRoom? gameRoomToSart = Globals.GetGameRoom(file);
+                                        if (gameRoomToSart == null)
+                                        {
+                                            SendMessage("Game Room not found", "Error");
+                                            continue;
+                                        }
+
+                                        // Start the game:
+                                        gameRoomToSart.gameStarted = true;
+
+                                        // Save Game Room:
+                                        gameRoomToSart.SaveGameToFile();
+                                        
+                                        // Notify all players:
+                                        gameRoomToSart.SendMessageToAll(
+                                            msg: gameRoomToSart.roomCode.ToString(),
+                                            purpose: "broadcast-start-game"
+                                        );
+                                    }
                                     break;
 
-                                case "checkWinner":
+                                case "gameTurn":
+                                    {
+                                        // Validtae Message:
+                                        if (clientMsg.msg == null || clientMsg.msg == "")
+                                        {
+                                            SendMessage("Bad Request", "Error");
+                                            continue;
+                                        }
 
+                                        // Parse:
+                                        GameRoundRequest? gameTurnRequest = JsonConvert.DeserializeObject<GameRoundRequest>(clientMsg.msg);
 
+                                        // Validate Game Round Request
+                                        if (gameTurnRequest == null || gameTurnRequest.playerName == "" || gameTurnRequest.gameType == "" || gameTurnRequest.gameCode == 0)
+                                        {
+                                            SendMessage("Bad Request", "Error");
+                                            continue;
+                                        }
 
+                                        // The game room:
+                                        GameRoom? gameRoom = Globals.GetGameRoom(gameTurnRequest.gameType, gameTurnRequest.gameCode);
+                                        if (gameRoom == null)
+                                        {
+                                            SendMessage("Game Room not available", "Error");
+                                            continue;
+                                        }
+                                        
+                                        // Is the game started?
+                                        if (!gameRoom.gameStarted)
+                                        {
+                                            SendMessage("Game not started", "Error");
+                                        }
+
+                                        WarRoundResponse? warRoundResponse = gameRoom.PlayerTurn(gameTurnRequest.playerName);
+
+                                        if (warRoundResponse == null)
+                                        {
+                                            SendMessage("UnAuthorized Game Turn", "Error");
+                                            continue;
+                                        }
+
+                                        // Save Game Room:
+                                        gameRoom.SaveGameToFile();
+
+                                        // Notify current player:
+                                        this.SendMessage(JsonConvert.SerializeObject(warRoundResponse), "broadcast-game-turn");
+
+                                        // Fliping Sides:
+                                        warRoundResponse.FlipSides();
+                                        
+                                        // Notify all players:
+                                        gameRoom.SendMessageToAll(
+                                            msg: JsonConvert.SerializeObject(warRoundResponse),
+                                            purpose: "broadcast-game-turn",
+                                            exclude: new List<string> { gameTurnRequest.playerName }
+                                        );
+                                    }
                                     break;
-
+                                    
+                                case "disconnect":
+                                    {
+                                        Disconnect();
+                                    }
+                                    break;
                                 case "Test":
-                                    Console.ResetColor();
-                                    Console.Write("[");
-                                    Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.Write("Server");
-                                    Console.ResetColor();
-                                    Console.WriteLine($"] {port}: {clientMsg.msg}");
-                                    SendMessage("Hello back from your server!", "Test");
+                                    {
+                                        Console.ResetColor();
+                                        Console.Write("[");
+                                        Console.ForegroundColor = ConsoleColor.Green;
+                                        Console.Write("Server");
+                                        Console.ResetColor();
+                                        Console.WriteLine($"] {port}: {clientMsg.msg}");
+                                        SendMessage("Hello back from your server!", "Test");
+                                    }
                                     break;
                             }
 
@@ -357,7 +456,6 @@ namespace CRS_Server.Networking
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-
                         Disconnect();
                         break;
                     }

@@ -6,164 +6,70 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CGH_Client.Controls;
+using System.Runtime.CompilerServices;
 
 namespace CGH_Client.Forms
 {
-    public class SelectGameForm : Form
+    public class SelectGameForm : BaseMovableForm
     {
-
-        Label mainLB, unoLB, warLB, cheatLB;
-        PictureBox unoPB, warPB, cheatPB, closeBtnPB;
-        Panel unoPanel, warPanel, cheatPanel;
-
-        public SelectGameForm()
+        
+        ScreenHeader header;
+        
+        public SelectGameForm() : base(
+            parent: null,
+            name: "SelectGameForm",
+            backgroundImagePath: Globals.ServerPathToFile("Assets\\Backgrounds", "background_2.png"),
+            scale: 0.7,
+            movable: true
+        )
         {
+            // Main label:
+            header = new ScreenHeader(this.Size, "מועדון משחקי הקלפים", 20F);
+            
+            // Main Menu of mini games:
+            MainMenuContainer mainMenu = new MainMenuContainer(
+                this.Size,
+                alignment: "center",
+                horizontalRatio: 0.6,
+                verticalRatio: 0.4,
+                totalItems: 3,
+                itemPadding: 30
+            );
 
-            StartPosition = FormStartPosition.CenterScreen;
-            Size = new Size(1495, 840);
-            BackgroundImage = Image.FromFile(Globals.baseDirectory + @"\Assets\Backgrounds\background_2.png");
-            BackgroundImageLayout = ImageLayout.Center;
-            FormBorderStyle = FormBorderStyle.None;
+            // UNO Game menu item:
+            MainMenuItem gameUnoMenuItem = new MainMenuItem(
+                text : "אונו",
+                imagePath : Globals.ServerPathToFile("Assets\\Uno\\wild", "wild_card.png")
+            );
+            gameUnoMenuItem.ClickAny += UnoPanel_Click;
+            mainMenu.AddItem(gameUnoMenuItem, 0);
 
-            mainLB = new Label()
-            {
-                AutoSize = true,
-                Text = "מועדון משחקי הקלפים",
-                Font = new Font("Varela Round", 18F, FontStyle.Bold),
-                BackColor = Color.Transparent,
-                ForeColor = Color.White,
-                Location = new Point(0, 25)
-            };
-            Functions.CenterControlHorizontally(this, mainLB);
-            Controls.Add(mainLB);
+            // WAR Game menu item:
+            MainMenuItem gameWarMenuItem = new MainMenuItem(
+                text: "מלחמה",
+                imagePath: Globals.ServerPathToFile("Assets\\Standard_52_Cards\\heart", "cardHearts_K.png")
+            );
+            gameWarMenuItem.ClickAny += WarPanel_Click;
+            mainMenu.AddItem(gameWarMenuItem, 1);
 
-            unoPanel = new Panel()
-            {
-                Size = new Size(164, 290),
-                Location = new Point(334, 270),
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-            Controls.Add(unoPanel);
-            unoPanel.Click += UnoPanel_Click;
+            // CHEAT Game menu item:
+            MainMenuItem gameCheatMenuItem = new MainMenuItem(
+                text: "צ'יט",
+                imagePath: Globals.ServerPathToFile("Assets\\Standard_52_Cards\\spade", "cardSpades_A.png")
+            );
+            gameCheatMenuItem.ClickAny += CheatPanel_Click;
+            mainMenu.AddItem(gameCheatMenuItem, 2);
 
-            unoPB = new PictureBox()
-            {
-                Size = new Size(164, 255),
-                Location = new Point(0, 0),
-                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Uno\wild\wild_card.png"),
-                SizeMode = PictureBoxSizeMode.Zoom,
-                Cursor = Cursors.Hand
-            };
-            unoPanel.Controls.Add(unoPB);
-            unoPB.Click += UnoPanel_Click;
-
-            unoLB = new Label()
-            {
-                AutoSize = true,
-                Text = "אונו",
-                Font = new Font("Varela Round", 25F, FontStyle.Bold),
-                BackColor = Color.Transparent,
-                ForeColor = Color.White,
-                Location = new Point(0, 250),
-                Cursor = Cursors.Hand
-            };
-            Functions.CenterControlHorizontally(unoPanel, unoLB);
-            unoPanel.Controls.Add(unoLB);
-            unoLB.Click += UnoPanel_Click;
-
-            warPanel = new Panel()
-            {
-                Size = new Size(164, 290),
-                Location = new Point(668, 270),
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-            Controls.Add(warPanel);
-            warPanel.Click += WarPanel_Click;
-
-            warPB = new PictureBox()
-            {
-                Size = new Size(164, 255),
-                Location = new Point(0, 0),
-                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Standard_52_Cards\heart\cardHearts_K.png"),
-                SizeMode = PictureBoxSizeMode.Zoom,
-                Cursor = Cursors.Hand
-            };
-            warPanel.Controls.Add(warPB);
-            warPB.Click += WarPanel_Click;
-
-            warLB = new Label()
-            {
-                AutoSize = true,
-                Text = "מלחמה",
-                Font = new Font("Varela Round", 25F, FontStyle.Bold),
-                BackColor = Color.Transparent,
-                ForeColor = Color.White,
-                Location = new Point(0, 250),
-                Cursor = Cursors.Hand
-            };
-            Functions.CenterControlHorizontally(warPanel, warLB);
-            warPanel.Controls.Add(warLB);
-            warLB.Click += WarPanel_Click;
-
-            cheatPanel = new Panel()
-            {
-                Size = new Size(164, 290),
-                Location = new Point(1002, 270),
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-            Controls.Add(cheatPanel);
-            cheatPanel.Click += CheatPanel_Click;
-
-            cheatPB = new PictureBox()
-            {
-                Size = new Size(164, 255),
-                Location = new Point(0, 0),
-                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Standard_52_Cards\spade\cardSpades_A.png"),
-                SizeMode = PictureBoxSizeMode.Zoom,
-                Cursor = Cursors.Hand
-            };
-            cheatPanel.Controls.Add(cheatPB);
-            cheatPB.Click += CheatPanel_Click;
-
-            cheatLB = new Label()
-            {
-                AutoSize = true,
-                Text = "צ'יט",
-                Font = new Font("Varela Round", 25F, FontStyle.Bold),
-                BackColor = Color.Transparent,
-                ForeColor = Color.White,
-                Location = new Point(0, 250),
-                Cursor = Cursors.Hand
-            };
-            Functions.CenterControlHorizontally(cheatPanel, cheatLB);
-            cheatPanel.Controls.Add(cheatLB);
-            cheatLB.Click += CheatPanel_Click;
-
-            closeBtnPB = new PictureBox()
-            {
-                Size = new Size(40, 40),
-                Location = new Point(50, 50),
-                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Icons\powerIcon.gif"),
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-            Controls.Add(closeBtnPB);
-            closeBtnPB.Click += CloseBtnPB_Click;
-
+            // Add all to the form:
+            this.Controls.Add(header);
+            this.Controls.Add(mainMenu);
         }
-
-        private void CloseBtnPB_Click(object sender, EventArgs e)
-        {
-            Environment.Exit(0);
-        }
-
+        
         private void CheatPanel_Click(object sender, EventArgs e)
         {
             Globals.gameChoosed = "Cheat";
-            HostOrJoinForm hostOrJoinForm = new HostOrJoinForm();
+            HostOrJoinForm hostOrJoinForm = new HostOrJoinForm(this, "צ'יטים");
             this.Hide();
             hostOrJoinForm.Show();
         }
@@ -171,7 +77,7 @@ namespace CGH_Client.Forms
         private void WarPanel_Click(object sender, EventArgs e)
         {
             Globals.gameChoosed = "War";
-            HostOrJoinForm hostOrJoinForm = new HostOrJoinForm();
+            HostOrJoinForm hostOrJoinForm = new HostOrJoinForm(this, "מלחמת קלפים");
             this.Hide();
             hostOrJoinForm.Show();
         }
@@ -179,7 +85,7 @@ namespace CGH_Client.Forms
         private void UnoPanel_Click(object sender, EventArgs e)
         {
             Globals.gameChoosed = "Uno";
-            HostOrJoinForm hostOrJoinForm = new HostOrJoinForm();
+            HostOrJoinForm hostOrJoinForm = new HostOrJoinForm(this, "אונו");
             this.Hide();
             hostOrJoinForm.Show();
         }

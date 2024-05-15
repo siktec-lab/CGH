@@ -1,5 +1,6 @@
 ﻿using CGH_Client.Utility;
-using CRS_Client.Networking;
+using CGH_Client.Controls;
+using CGH_Client.Networking;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,51 +13,34 @@ using System.Windows.Forms;
 
 namespace CGH_Client.Forms
 {
-    public class GameLobbyForm : Form
+    public class GameLobbyForm : BaseMovableForm
     {
-
-        Label mainLB, selectedGameLB, lobbyCodeLB, codeLB;
+        ScreenHeader header;
+        MainMenuContainer footerMenu;
+        Label lobbyCodeLB, codeLB;
         ListView joinedPlayers;
         Button startGameB;
-        PictureBox closeBtnPB;
 
         public bool isRefreshing = true;
 
-        public GameLobbyForm()
+        public GameLobbyForm(object parent) : base(
+            parent: parent,
+            name: "GameLobbyForm",
+            backgroundImagePath: Globals.ServerPathToFile("Assets\\Backgrounds", "background_2.png"),
+            scale: 0.7,
+            movable: true
+        )
         {
+            // Screen header:
+            this.header = new ScreenHeader(
+                parent: this.Size,
+                text: this.PrepareHeaderText("המשחק הנבחר", Globals.gameChoosed),
+                fontSize: 20F
+            );
+            this.Controls.Add(this.header);
 
-            StartPosition = FormStartPosition.CenterScreen;
-            Size = new Size(1495, 840);
-            BackgroundImage = Image.FromFile(Globals.baseDirectory + @"\Assets\Backgrounds\background_2.png");
-            BackgroundImageLayout = ImageLayout.Center;
-            FormBorderStyle = FormBorderStyle.None;
-
-            mainLB = new Label()
-            {
-                AutoSize = true,
-                Text = ":המשחק הנבחר",
-                Font = new Font("Varela Round", 18F, FontStyle.Bold),
-                BackColor = Color.Transparent,
-                ForeColor = Color.White,
-                Location = new Point(0, 25)
-            };
-            Functions.CenterControlHorizontally(this, mainLB);
-            Controls.Add(mainLB);
-
-            selectedGameLB = new Label()
-            {
-                AutoSize = true,
-                Text = "",
-                Font = new Font("Varela Round", 18F, FontStyle.Bold),
-                BackColor = Color.Transparent,
-                ForeColor = Color.White,
-                Location = new Point(0, 65)
-            };
-            selectedGameLB.Text = Globals.gameChoosed;
-            Functions.CenterControlHorizontally(this, selectedGameLB);
-            Controls.Add(selectedGameLB);
-
-            lobbyCodeLB = new Label()
+            // Lobby code label:
+            this.lobbyCodeLB = new Label()
             {
                 AutoSize = true,
                 Text = ":הקוד ללובי",
@@ -65,10 +49,11 @@ namespace CGH_Client.Forms
                 ForeColor = Color.White,
                 Location = new Point(0, 100)
             };
-            Functions.CenterControlHorizontally(this, lobbyCodeLB);
-            Controls.Add(lobbyCodeLB);
+            Functions.CenterControlHorizontally(this, this.lobbyCodeLB);
+            Controls.Add(this.lobbyCodeLB);
 
-            codeLB = new Label()
+            // Lobby code value:
+            this.codeLB = new Label()
             {
                 AutoSize = true,
                 Text = "",
@@ -77,11 +62,11 @@ namespace CGH_Client.Forms
                 ForeColor = Color.White,
                 Location = new Point(0, 140)
             };
-            codeLB.Text = Globals.gameCode.ToString();
-            Functions.CenterControlHorizontally(this, codeLB);
-            Controls.Add(codeLB);
+            Functions.CenterControlHorizontally(this, this.codeLB);
+            this.Controls.Add(this.codeLB);
 
-            joinedPlayers = new ListView()
+            // Players list:
+            this.joinedPlayers = new ListView()
             {
                 Size = new Size(300, 450),
                 Location = new Point(0, 180),
@@ -89,196 +74,156 @@ namespace CGH_Client.Forms
                 View = View.Details,
                 SmallImageList = new ImageList()
             };
-            Functions.CenterControlHorizontally(this, joinedPlayers);
-            Controls.Add(joinedPlayers);
+            Functions.CenterControlHorizontally(this, this.joinedPlayers);
+            this.Controls.Add(joinedPlayers);
 
-            joinedPlayers.Columns.Add("Image", 150);
-            joinedPlayers.Columns.Add("Player Name", 150);
-            joinedPlayers.SmallImageList.ImageSize = new Size(100, 100);
+            this.joinedPlayers.Columns.Add("Image", 150);
+            this.joinedPlayers.Columns.Add("Player Name", 150);
+            this.joinedPlayers.SmallImageList.ImageSize = new Size(100, 100);
 
 
-            startGameB = new Button()
+            // Start game button:
+            this.startGameB = new Button()
             {
-                Size = new Size(100, 50),
+                Size = new Size(300, 50),
                 Location = new Point(0, 655),
-                Text = "התחל משחק",
-                FlatStyle = FlatStyle.Flat
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Varela Round", 12F, FontStyle.Bold)
             };
-            Functions.CenterControlHorizontally(this, startGameB);
-            Controls.Add(startGameB);
-            startGameB.Hide();
-            startGameB.Click += StartGameB_Click;
+            Functions.CenterControlHorizontally(this, this.startGameB);
+            this.Controls.Add(this.startGameB);
+            this.startGameB.Click += this.StartGameB_Click;
 
-            closeBtnPB = new PictureBox()
-            {
-                Size = new Size(40, 40),
-                Location = new Point(50, 50),
-                Image = Image.FromFile(Globals.baseDirectory + @"\Assets\Icons\powerIcon.gif"),
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-            Controls.Add(closeBtnPB);
-            closeBtnPB.Click += CloseBtnPB_Click;
+            // Footer Menu:
+            this.footerMenu = new MainMenuContainer(
+                parent: new Size(this.Width, this.Height - 15),
+                alignment: "bottom-left",
+                horizontalRatio: 0.3,
+                fixedHeight: 80,
+                totalItems: 5,
+                itemPadding: 0
+            );
+            this.Controls.Add(this.footerMenu);
 
-            //new Thread(new ThreadStart(keepRefreshingLobby)).Start();
+            // Back button:
+            MainMenuItem backMenuItem = new MainMenuItem(
+                text: "יציאה",
+                imagePath: Globals.ServerPathToFile("Assets\\Icons", "homeIcon.png"),
+                fontSize: 16F
+            );
+            backMenuItem.ClickAny += this.BackButton_Click;
+            this.footerMenu.AddItem(backMenuItem, 0);
 
-            this.FormClosed += GameLobbyForm_FormClosed;
+            // Form level events:
+            this.FormClosing += this.GameLobbyForm_FormClosing;
+
+            // Initial Refresh:
+            this.RefreshLobby();
 
         }
-
-        private void CloseBtnPB_Click(object sender, EventArgs e)
+        private string PrepareHeaderText(string headerTxt, string nameTxt)
         {
-
-            Player tempPlayer = new Player();
-            tempPlayer.Name = Globals.charName;
-            tempPlayer.ImgCharNum = Globals.charTagSelected;
-            tempPlayer.gameID = Globals.gameID;
-            tempPlayer.isDisconnected = true;
-
-            switch (Globals.hostOrJoin)
-            {
-
-                case "HOST":
-
-                    tempPlayer.isHost = true;
-
-                    break;
-
-                case "JOIN":
-
-                    tempPlayer.isHost = false;
-
-                    break;
-            }
-
-            string msgToSend = JsonConvert.SerializeObject(tempPlayer);
-
-            Globals.ServerConnector.SendMessage(msgToSend, "removeFromGame");
-            Environment.Exit(0);
+            // Concatenate the two and return
+            return headerTxt + ": \"" + nameTxt + "\"";
         }
-
+        
         private void StartGameB_Click(object sender, EventArgs e)
         {
-            Globals.ServerConnector.SendMessage(Globals.globalGameRoom.gameType + "-" + Globals.globalGameRoom.roomCode, "gameStarted");
+            if (Globals.gameRoom is BaseGameRoom room)
+            {
+                if (Globals.hostOrJoin == "HOST" && room.IsGameReady())
+                {
+                    // Send start game request to server
+                    Globals.ServerConnector.SendMessage(room.gameType + "-" + room.roomCode.ToString(), "startGameRoom");
+                }
+                else
+                {
+                    MessageBox.Show("רק מנהל הלובי יכול להתחיל את המשחק", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
-        private void keepRefreshingLobby()
+        public void RefreshLobby()
         {
-            List<string> playerNames = new List<string>();
-            List<string> playerNamesDisconnected = new List<string>();
-            bool hasShown = false;
+            // Refresh Code:
+            this.RefreshCode();
+            // Refresh Players:
+            this.RefreshPlayersList();
+            // Refresh State:
+            this.StartGameState();
+        }
 
-            while (isRefreshing)
+        public void RefreshPlayersList()
+        {
+            this.joinedPlayers.Items.Clear();
+            if (Globals.gameRoom is BaseGameRoom room)
             {
-                Globals.ServerConnector.SendMessage(Globals.globalGameRoom.gameType + "-" + Globals.globalGameRoom.roomCode, "getGameLobby");
-
-                Thread.Sleep(100);
-
-                for (int i = 0; i < Globals.globalGameRoom.players.Count; i++)
+                foreach (Player player in room.players)
                 {
-                    ListViewItem item = null;
-                    Invoke((MethodInvoker)delegate
+                    ListViewItem item = new ListViewItem();
+
+                    // Load the image
+                    Image image = Image.FromFile(Globals.ServerPathToFile("Assets\\Characters", "char_" + player.ImgCharNum + ".png"));
+                    item.ImageIndex = joinedPlayers.SmallImageList.Images.Count;
+                    this.joinedPlayers.SmallImageList.Images.Add(image);
+
+                    // Add the player's name as the second sub-item
+                    item.SubItems.Add(player.Name);
+
+                    // Add the new item to the ListView
+                    this.joinedPlayers.Invoke((MethodInvoker)delegate { this.joinedPlayers.Items.Add(item); });
+                }
+            }
+        }
+
+        public void RefreshCode()
+        {
+            if (Globals.gameRoom is BaseGameRoom room)
+            {
+                this.codeLB.Text = room.roomCode.ToString();
+                Functions.CenterControlHorizontally(this, this.codeLB);
+            }
+        }
+
+        private void StartGameState()
+        {
+            if (Globals.gameRoom is BaseGameRoom room)
+            {
+                if (!room.IsGameReady())
+                {
+                    this.startGameB.Enabled = false;
+                    this.startGameB.Text = "ממתין לשחקנים נוספים...";
+
+                } 
+                else 
+                {
+                    Player me = room.GetPlayer(room.myPlayerIndex);
+                    if (me.Name != "" && me.isHost)
                     {
-                        item = joinedPlayers.FindItemWithText(Globals.globalGameRoom.players[i].Name);
-                    });
-
-                    if (item == null)
-                    {
-                        // If the item doesn't exist, create a new item with an image and the player's name
-                        ListViewItem newItem = new ListViewItem();
-
-                        // Load the image
-                        Image image = Image.FromFile(Globals.baseDirectory + @"\Assets\Characters\char_" + Globals.globalGameRoom.players[i].ImgCharNum + ".png");
-
-                        // Set the image as the first sub-item
-                        newItem.ImageIndex = joinedPlayers.SmallImageList.Images.Count;
-                        joinedPlayers.SmallImageList.Images.Add(image);
-
-                        // Add the player's name as the second sub-item
-                        newItem.SubItems.Add(Globals.globalGameRoom.players[i].Name);
-
-                        // Add the new item to the ListView
-                        joinedPlayers.Invoke((MethodInvoker)delegate { joinedPlayers.Items.Add(newItem); });
-
-                        playerNames.Add(Globals.globalGameRoom.players[i].Name);
-                    }
+                        this.startGameB.Enabled = true;
+                        this.startGameB.Text = "הכל מוכן, התחל משחק";
+                    } 
                     else
                     {
-                        // If the item exists, update its information
-                        if (Globals.globalGameRoom.players[i].isDisconnected)
-                        {
-                            // Update the player's name
-                            Invoke((MethodInvoker)delegate { item.SubItems[1].Text = Globals.globalGameRoom.players[i].Name + " (Disconnected)"; });
-
-                            // Add the player's name to the list of player names if it's not already present
-                            if (!playerNamesDisconnected.Contains(Globals.globalGameRoom.players[i].Name))
-                            {
-                                playerNamesDisconnected.Add(Globals.globalGameRoom.players[i].Name);
-                            }
-                        }
-                        else
-                        {
-                            // Update the player's name
-                            Invoke((MethodInvoker)delegate { item.SubItems[1].Text = Globals.globalGameRoom.players[i].Name; });
-
-                            // Remove the player's name from the list of player names if it's present
-                            if (playerNamesDisconnected.Contains(Globals.globalGameRoom.players[i].Name))
-                            {
-                                playerNamesDisconnected.Remove(Globals.globalGameRoom.players[i].Name);
-                            }
-                        }
+                        this.startGameB.Enabled = false;
+                        this.startGameB.Text = "ממתין למארח שיתחיל את המשחק";
                     }
                 }
-
-                // Show or hide the start game button based on the count of player names
-                switch (Globals.hostOrJoin)
-                {
-                    case "HOST":
-                        if (playerNames.Count > 1 && playerNamesDisconnected.Count == 0 && !hasShown)
-                        {
-                            Invoke((MethodInvoker)delegate { startGameB.Show(); });
-                            hasShown = true;
-                        }
-                        else if (playerNamesDisconnected.Count >= 1 && hasShown)
-                        {
-                            Invoke((MethodInvoker)delegate { startGameB.Hide(); });
-                            hasShown = false;
-                        }
-                        break;
-                }
-
-
-                Thread.Sleep(100);
+                Functions.CenterControlHorizontally(this, this.startGameB);
             }
         }
 
-        private void GameLobbyForm_FormClosed(object sender, FormClosedEventArgs e)
+        private void GameLobbyForm_FormClosing(object sender, EventArgs e)
         {
-            Player tempPlayer = new Player();
-            tempPlayer.Name = Globals.charName;
-            tempPlayer.ImgCharNum = Globals.charTagSelected;
-            tempPlayer.gameID = Globals.globalGameRoom.gameType + "-" + Globals.globalGameRoom.roomCode;
-            tempPlayer.isDisconnected = true;
-
-            switch (Globals.hostOrJoin)
+            if (Globals.gameRoom is BaseGameRoom room && !room.isGameStarted)
             {
-                case "HOST":
-
-                    tempPlayer.isHost = true;
-
-                    break;
-
-                case "JOIN":
-
-                    tempPlayer.isHost = false;
-
-                    break;
+                room.RemoveFromGame();
             }
-
-            string msgToSend = JsonConvert.SerializeObject(tempPlayer);
-
-            Globals.ServerConnector.SendMessage(msgToSend, "removeFromGame");
-            Environment.Exit(0);
+        }
+        
+        private void BackButton_Click(object sender, EventArgs e)
+        {
+            this.CloseAndBack();
         }
     }
 }

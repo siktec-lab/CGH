@@ -9,17 +9,19 @@ namespace CGH_Client.Utility
     public class Player
     {
 
-        public string Name { get; set; }
-        public int ImgCharNum { get; set; }
-        public string gameID { get; set; }
-        public bool isHost { get; set; }
-        public bool isDisconnected { get; set; }
-        public string selectedCard { get; set; }
+        public string Name { get; set; } = "";
+        public int ImgCharNum { get; set; } = 0;
+        public string gameID { get; set; } = "";
+        public bool isHost { get; set; } = false;
+        public bool isDisconnected { get; set; } = false;
+        public string selectedCard { get; set; } = "";
 
         public Player()
         {
 
         }
+
+        
 
     }
 }

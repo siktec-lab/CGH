@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CRS_Client.Networking
+namespace CGH_Client.Networking
 {
     public class ServerMsg
     {

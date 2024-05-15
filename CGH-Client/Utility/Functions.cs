@@ -4,15 +4,13 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using CGH_Client.Forms;
 
 namespace CGH_Client.Utility
 {
     public static class Functions
     {
-
         public static void CenterControlHorizontally(Form form, Control control)
         {
             Graphics g = form.CreateGraphics();
