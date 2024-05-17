@@ -8,11 +8,13 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using CGH_Server.Networking.Messages;
+using Newtonsoft.Json;
 
 namespace CGH_Server.Utility
 {
     public class GameRoom
     {
+        
         public string gameType { get; set; }
         public int roomCode { get; set; }
         public List<Player> players { get; set; }
@@ -45,7 +47,9 @@ namespace CGH_Server.Utility
         };
 
         public bool gameStarted = false;
-            
+
+        public bool gameEnded = false;
+        
         public WarGameRound game;
 
         public GameRoom()
@@ -95,10 +99,19 @@ namespace CGH_Server.Utility
                 response.isRoundOver = true;
                 response.roundWinner = this.game.CalculateHandWinner(this.values);
             }
+            
             response.yourScore = this.game.CurrenScore(id);
             response.enemyScore = this.game.CurrenScore(response.enemyId);
             response.roundNumber = this.game.round;
 
+            // Is game over?
+            response.isGameOver = this.game.IsGameOver();
+            if (response.isGameOver)
+            {
+                this.gameEnded = true;
+                response.gameWinner = this.game.CalculateFinalWinner();
+            }
+            
             return response;
         }
 
@@ -207,19 +220,29 @@ namespace CGH_Server.Utility
         //sends Message over TCP
         public void SendMessageToUser(string name, string msg, string purpose)
         {
-            TcpClient? client = Globals.phoneBook.GetAddress(this.roomCode, name);
-            if (client == null || !client.Connected)
+            TCP? transport = Globals.phoneBook.GetAddress(this.roomCode, name);
+            transport?.SendMessage(msg, purpose);
+            /*if (client == null || !transport.client.Connected)
                 return;
             try
             {
                 NetworkStream stream = client.GetStream();
                 if (stream.CanWrite)
                 {
-                    byte[] msgArr = Encoding.ASCII.GetBytes(JsonSerializer.Serialize(new ClientMsg() { purpose = purpose, msg = msg }));
+                    // Serialize:
+                    string json = JsonConvert.SerializeObject(new ClientMsg() { purpose = purpose, msg = msg });
+
+                    //Encrypt:
+                    if (transport.protect.HasKey())
+                    {
+                        json = this.protect.Encrypt(json);
+                    }
+                    
+                    byte[] msgArr = Encoding.ASCII.GetBytes(json);
                     stream.Write(msgArr, 0, msgArr.Length);
                 }
             }
-            catch { }
+            catch { }*/
         }
 
         public void SendMessageToAll(string msg, string purpose, List<string>? exclude = null)
@@ -251,7 +274,19 @@ namespace CGH_Server.Utility
             }
         }
 
-
+        public bool DeleteGameFile()
+        {
+            string file = Globals.FilterGameRoomAndBuildPath(this.gameType, this.roomCode);
+            try
+            {
+                File.Delete(file);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 
     public class WarGameRound
@@ -262,13 +297,15 @@ namespace CGH_Server.Utility
 
         public List<string> player1Cards { get; set; } = new List<string>();
 
+        public int fullRounds { get; set; } = 6; // 26 is the max number of rounds in a game of war
+
         public int round = 0;
         
-        int points0 { get; set; }
+        public int points0 { get; set; }
 
-        int points1 { get; set; }
+        public int points1 { get; set; }
 
-        int winner { get; set; } = 0;
+        public int winner { get; set; } = 0;
 
         public int GetPlayerIndex(string name)
         {
@@ -381,17 +418,22 @@ namespace CGH_Server.Utility
             if (value0 > value1)
             {
                 this.points0++;
-                return 1;
+                return 0;
             }
             else if (value0 < value1)
             {
                 this.points1++;
-                return 2;
+                return 1;
             }
             else
             {
-                return 0;
+                return -1;
             }
+        }
+
+        public bool IsGameOver()
+        {
+            return IsRoundOver() && this.round == this.fullRounds;
         }
         
         public int CalculateFinalWinner()

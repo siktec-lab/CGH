@@ -80,6 +80,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\ScoreCounter.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\PlayerCard.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -124,6 +127,7 @@
     <Compile Include="Networking\Messages\CreateGameMessage.cs" />
     <Compile Include="Networking\Messages\CreateGameResponse.cs" />
     <Compile Include="Networking\Messages\WarRoundResponse.cs" />
+    <Compile Include="Networking\Protect.cs" />
     <Compile Include="Networking\ServerMsg.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

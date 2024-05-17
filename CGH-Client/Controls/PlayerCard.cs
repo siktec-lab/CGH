@@ -13,7 +13,7 @@ namespace CGH_Client.Controls
         public Label header;
         public PictureBox avatar;
         public PictureBox pb;
-        public Label yourTurn;
+        public Label cardLabel;
         public Button drawButton;
 
         public string currentCard = "None";
@@ -81,19 +81,19 @@ namespace CGH_Client.Controls
             };
 
             // Your Turn:
-            this.yourTurn = new Label()
+            this.cardLabel = new Label()
             {
                 AutoSize = false,
                 Size = new Size(this.Width, 40),
-                Text = "תורך לשחק",
-                Font = new Font("Varela Round", 20F, FontStyle.Bold),
+                Font = new Font("Varela Round", 18F, FontStyle.Bold),
                 BackColor = Color.Transparent,
-                ForeColor = Color.OrangeRed,
+                ForeColor = Color.Yellow,
                 Location = new Point(0, this.Height - 40),
                 TextAlign = ContentAlignment.MiddleCenter,
                 RightToLeft = RightToLeft.Yes,
                 Visible = false,
             };
+            this.CardLabelText("תורך לשחק");
 
             // Layout debug:
             if (Globals.showLayoutDebug)
@@ -102,7 +102,7 @@ namespace CGH_Client.Controls
                 this.header.BorderStyle   = BorderStyle.FixedSingle;
                 this.avatar.BorderStyle   = BorderStyle.FixedSingle;
                 this.pb.BorderStyle       = BorderStyle.FixedSingle;
-                this.yourTurn.BorderStyle = BorderStyle.FixedSingle;
+                this.cardLabel.BorderStyle = BorderStyle.FixedSingle;
             }
             
 
@@ -110,7 +110,7 @@ namespace CGH_Client.Controls
             this.Controls.Add(this.avatar);
             this.Controls.Add(this.pb);
             this.Controls.Add(this.drawButton);
-            this.Controls.Add(this.yourTurn);
+            this.Controls.Add(this.cardLabel);
 
             // Initial:
             this.SetCard("None");
@@ -124,14 +124,14 @@ namespace CGH_Client.Controls
             if (onlyWatching)
             {
                 this.drawButton.Visible = false;
-                this.yourTurn.Text = "ממתין למתמודד";
+                this.CardLabelText("מתמודד טרם שלף");
             }
             else
             {
                 this.drawButton.Enabled = true;
-                this.yourTurn.Visible = isTurn;
+                this.cardLabel.Visible = isTurn;
             }
-            this.yourTurn.Visible = isTurn;
+            this.cardLabel.Visible = isTurn;
         }
         
         public void SetPlayer(string name, int avatarImgCharNum = 2)
@@ -224,12 +224,25 @@ namespace CGH_Client.Controls
         }
         
         // Set turn:
-        public void SetTurn(bool enable)
+        public void SetTurn(bool enable, string labelText)
         {
             // Enable the button:
             this.drawButton.Enabled = enable;
+            
             // Show the label:
-            this.yourTurn.Visible = enable;
+            if (labelText == "hide")
+            {
+                this.cardLabel.Visible = enable;
+            } else
+            {
+                this.cardLabel.Visible = true;
+                this.CardLabelText(labelText);
+            }
+        }
+
+        public void CardLabelText(string text)
+        {
+            this.cardLabel.Text = text;
         }
     }
 }

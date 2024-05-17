@@ -13,18 +13,27 @@ namespace CGH_Server.Networking
     {
         private const int BUFFER_SIZE = 10000000;//10MB
 
-        TcpClient client;
-        private Thread listenerThread;
+        public TcpClient? client;
+        private Thread? listenerThread;
         private int port;
-        string clientIp;
+        string clientIp = "Unknown";
         bool isCreated = false;
-        TcpListener listener;
-        TcpClient tcpClient;
+        TcpListener? listener;
+        TcpClient? tcpClient;
+        Protect protect;
 
         /*Constructor*/
-        public TCP(int port)
+        public TCP(int port, Protect protect)
         {
             this.port = port;
+            this.protect = protect;
+            Start();
+        }
+        
+        public TCP(int port, bool encrypted = true)
+        {
+            this.port = port;
+            this.protect = new Protect(encrypted);
             Start();
         }
 
@@ -50,7 +59,7 @@ namespace CGH_Server.Networking
             }
             while (true)
             {
-                client = listener.AcceptTcpClient();
+                client = listener?.AcceptTcpClient();
                 Thread clientThread = new Thread(new ParameterizedThreadStart(HandleClientComm));
                 clientThread.Start(client);
             }
@@ -59,46 +68,52 @@ namespace CGH_Server.Networking
         // Handles communication with a client
         private void HandleClientComm(object clientObj)
         {
+            // An encryption ecoder and decoder
+            Protect Encryptor = new Protect();
+            
             while (true)
             {
                 tcpClient = (TcpClient)clientObj;
                 using (NetworkStream clientStream = tcpClient.GetStream())
                 {
-                    clientIp = Convert.ToString(((IPEndPoint)client.Client.RemoteEndPoint).Address);
-                    Console.ResetColor();
-                    Console.Write("[");
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.Write("Server");
-                    Console.ResetColor();
-                    Console.WriteLine($"] {port}: Connected");
+                    // Client IP:
+                    clientIp = Convert.ToString(((IPEndPoint)client.Client.RemoteEndPoint).Address) ?? "Unknown";
+
+                    // Debug:
+                    Globals.ServerDebug("Server", $"Player {clientIp} Is Connected to Port {port}");
+
+                    // Initialize a buffer:
                     byte[] buffer = new byte[BUFFER_SIZE];
                     int bytesRead;
 
                     try
                     {
+                        // Wait for the client to send data:
                         while ((bytesRead = clientStream.Read(buffer, 0, buffer.Length)) != 0)
                         {
-
-                            Thread.Sleep(10);
-                            string msgReceived = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                            Thread.Sleep(10);
-
-                            List<string> gameCards = new List<string>();
-
-                            if (msgReceived.Contains("}{"))
+                            string msgReceived = "";
+                            // Decrypt the message:
+                            if (this.protect.HasKey())
                             {
-                                continue;
+                                try
+                                {
+                                    msgReceived = protect.Decrypt(Encoding.ASCII.GetString(buffer, 0, bytesRead));
+                                }
+                                catch (Exception)
+                                {
+                                    msgReceived = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                                }
+                            }
+                            else
+                            {
+                                msgReceived = Encoding.ASCII.GetString(buffer, 0, bytesRead);
                             }
 
-                            ClientMsg clientMsg = JsonConvert.DeserializeObject<ClientMsg>(msgReceived);
+                            ClientMsg clientMsg = JsonConvert.DeserializeObject<ClientMsg>(msgReceived) ?? new ClientMsg();
 
-                            Console.ResetColor();
-                            Console.Write("[");
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.Write("Server");
-                            Console.ResetColor();
-                            Console.WriteLine($"] {port}: purpose: {clientMsg.purpose}, msg: {clientMsg.msg}");
-
+                            // Debug:
+                            Globals.ServerDebug("Server", $"Player {clientIp}:{port} Sent ->  purpose: {clientMsg.purpose}, msg: {clientMsg.msg}");
+                            
                             // Handle the message based on its purpose
                             switch (clientMsg.purpose)
                             {
@@ -131,19 +146,15 @@ namespace CGH_Server.Networking
                                         {
                                             // Save Game Room:
                                             gameRoom.SaveGameToFile();
-
-                                            Console.ResetColor();
-                                            Console.Write("[");
-                                            Console.ForegroundColor = ConsoleColor.Green;
-                                            Console.Write("Server");
-                                            Console.ResetColor();
-                                            Console.WriteLine($"] {port}: msg: Game Room created successfully. purpose: created-game-room");
-
+                                            
+                                            // Debug:
+                                            Globals.ServerDebug("Server", $"Player {clientIp}:{port} -> Created Game Room { gameRoom.gameType + "-" + gameRoom.roomCode }");
+                                            
                                             // Add to address book:
                                             Globals.phoneBook.AddAddress(
                                                 gameCode: gameRoom.roomCode,
                                                 user: createGameRequest.playerName,
-                                                client: tcpClient
+                                                transport: this
                                             );
 
                                             CreateGameResponse createGameResponse = new CreateGameResponse();
@@ -152,12 +163,10 @@ namespace CGH_Server.Networking
                                         }
                                         else
                                         {
-                                            Console.ResetColor();
-                                            Console.Write("[");
-                                            Console.ForegroundColor = ConsoleColor.Green;
-                                            Console.Write("Server");
-                                            Console.ResetColor();
-                                            Console.WriteLine($"] {port}: msg: Game Room already created try again. purpose: Error");
+                                            // Debug:
+                                            Globals.ServerDebug("Server", $"Player {clientIp}:{port} -> Game Room '{gameRoom.gameType + "-" + gameRoom.roomCode}' already created try again");
+
+                                            // Send Error:
                                             SendMessage("Game Room already created try again.", "Error");
                                         }
                                     }
@@ -191,9 +200,9 @@ namespace CGH_Server.Networking
                                         }
 
                                         // Make sure the game is not in play mode:
-                                        if (gameRoomToJoin.gameStarted)
+                                        if (gameRoomToJoin.gameStarted || gameRoomToJoin.gameEnded)
                                         {
-                                            SendMessage("Game already started", "Error");
+                                            SendMessage("Game Room is in play mode or done", "Error");
                                             continue;
                                         }
 
@@ -207,7 +216,7 @@ namespace CGH_Server.Networking
                                         Globals.phoneBook.AddAddress(
                                             gameCode: gameRoomToJoin.roomCode,
                                             user: joinGameRequest.playerName,
-                                            client: tcpClient
+                                            transport: this
                                         );
                                         
                                         //Response:
@@ -276,15 +285,15 @@ namespace CGH_Server.Networking
                                         }
 
                                         // The game room:
-                                        GameRoom? gameRoomToJoin = Globals.GetGameRoom(removeFromGameRequest.gameType, removeFromGameRequest.gameCode);
-                                        if (gameRoomToJoin == null)
+                                        GameRoom? gameRoom = Globals.GetGameRoom(removeFromGameRequest.gameType, removeFromGameRequest.gameCode);
+                                        if (gameRoom == null)
                                         {
                                             SendMessage("", "removed-from-game-none");
                                             continue;
                                         }
 
                                         // The player: 
-                                        Player? playerToRemove = gameRoomToJoin.GetPlayer(removeFromGameRequest.playerName);
+                                        Player? playerToRemove = gameRoom.GetPlayer(removeFromGameRequest.playerName);
                                         if (playerToRemove == null)
                                         {
                                             SendMessage("", "removed-from-game-none");
@@ -295,47 +304,32 @@ namespace CGH_Server.Networking
                                         if (playerToRemove.isHost)
                                         {
                                             // Remove the game room:
-                                            File.Delete(Globals.ServerPathToFile("GameLobbies", Globals.FilterGameRoomAndBuildPath(removeFromGameRequest.gameType, removeFromGameRequest.gameCode)));
-                                            
+                                            gameRoom.DeleteGameFile();
+
                                             // Let the players know:
-                                            gameRoomToJoin.SendMessageToAll(
+                                            gameRoom.SendMessageToAll(
                                                 msg: removeFromGameRequest.playerName,
-                                                purpose: "broadcast-removed-from-game-host"
+                                                purpose: "broadcast-removed-from-game-host",
+                                                exclude: new List<string> { removeFromGameRequest.playerName }
                                             );
-                                    
+
                                             // Remove the players and from the address book:
-                                            gameRoomToJoin.RemoveAllPlayers();
+                                            gameRoom.RemoveAllPlayers();
                                         }
                                         else
                                         {
                                             // Remove the player:
-                                            gameRoomToJoin.RemovePlayer(removeFromGameRequest.playerName);
+                                            gameRoom.RemovePlayer(removeFromGameRequest.playerName);
 
                                             // Save Game Room:
-                                            gameRoomToJoin.SaveGameToFile();
+                                            gameRoom.SaveGameToFile();
 
-                                            gameRoomToJoin.SendMessageToAll(
+                                            gameRoom.SendMessageToAll(
                                                 msg: removeFromGameRequest.playerName,
                                                 purpose: "broadcast-removed-from-game-player",
                                                 exclude: new List<string> { removeFromGameRequest.playerName } // Probably not required but just in case
                                             );
                                         }
-                                    }
-                                    break;
-
-                                case "deleteGame":
-                                    {
-                                        /*string fileNameDelete = clientMsg.msg + ".json";
-
-                                        string fileLinesDelete = File.ReadAllText(Globals.baseDirectory + @"\GameLobbies\" + fileNameDelete);
-
-                                        GameRoom tempGameRoomDelete = JsonConvert.DeserializeObject<GameRoom>(fileLinesDelete);
-                                        for (int i = 0; i < tempGameRoomDelete.players.Count; i++)
-                                        {
-                                            Globals.ClientTCPS[i].SendMessage(tempGameRoomDelete.gameType + "-" + tempGameRoomDelete.roomCode, "gameDeleted");
-                                        }
-
-                                        File.Delete(Globals.baseDirectory + @"\GameLobbies\" + fileNameDelete);*/
                                     }
                                     break;
                                 case "startGameRoom":
@@ -359,8 +353,15 @@ namespace CGH_Server.Networking
                                             continue;
                                         }
 
+                                        if (gameRoomToSart.gameStarted || gameRoomToSart.gameEnded)
+                                        {
+                                            SendMessage("Game Room already started or ended", "Error");
+                                            continue;
+                                        }
+
                                         // Start the game:
                                         gameRoomToSart.gameStarted = true;
+                                        gameRoomToSart.gameEnded = false;
 
                                         // Save Game Room:
                                         gameRoomToSart.SaveGameToFile();
@@ -404,11 +405,19 @@ namespace CGH_Server.Networking
                                         if (!gameRoom.gameStarted)
                                         {
                                             SendMessage("Game not started", "Error");
+                                            continue;
                                         }
 
-                                        WarRoundResponse? warRoundResponse = gameRoom.PlayerTurn(gameTurnRequest.playerName);
+                                        // Is the game ended?
+                                        if (gameRoom.gameEnded)
+                                        {
+                                            SendMessage("Game already ended", "Error");
+                                            continue;
+                                        }
 
-                                        if (warRoundResponse == null)
+                                        // Perform the game turn:
+                                        WarRoundResponse? warRoundResponse = gameRoom.PlayerTurn(gameTurnRequest.playerName);
+                                        if (warRoundResponse == null) // Will mostly mean that the player is not in the game!
                                         {
                                             SendMessage("UnAuthorized Game Turn", "Error");
                                             continue;
@@ -429,6 +438,13 @@ namespace CGH_Server.Networking
                                             purpose: "broadcast-game-turn",
                                             exclude: new List<string> { gameTurnRequest.playerName }
                                         );
+
+                                        // Finaly if the game is over delete it:
+                                        if (warRoundResponse.isGameOver)
+                                        {
+                                            gameRoom.RemoveAllPlayers(); // Will also remove from phone book!
+                                            gameRoom.DeleteGameFile();
+                                        }
                                     }
                                     break;
                                     
@@ -439,12 +455,8 @@ namespace CGH_Server.Networking
                                     break;
                                 case "Test":
                                     {
-                                        Console.ResetColor();
-                                        Console.Write("[");
-                                        Console.ForegroundColor = ConsoleColor.Green;
-                                        Console.Write("Server");
-                                        Console.ResetColor();
-                                        Console.WriteLine($"] {port}: {clientMsg.msg}");
+                                        // Debug:
+                                        Globals.ServerDebug("Server", $"Test {clientIp}:{port} -> Message {clientMsg.msg}");
                                         SendMessage("Hello back from your server!", "Test");
                                     }
                                     break;
@@ -465,25 +477,22 @@ namespace CGH_Server.Networking
 
         public void Disconnect()
         {
+            // Debug:
+            Globals.ServerDebug("Server", $"Player {clientIp}:{port} -> Disconnected"); 
 
             //Update Port list to set this port as available
-            Console.ResetColor();
-            Console.Write("[");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("Server");
-            Console.ResetColor();
-            Console.WriteLine($"] {port}: {clientIp} Disconnected");
-            for (int i = 0; i < Globals.RouterServer.ports.Count; i++)
+            for (int i = 0; i < Globals.RouterServer?.ports.Count; i++)
             {
                 if (Globals.RouterServer.ports[i].port == port)
                 {
                     Globals.RouterServer.ports[i].isAvailable = true;
                 }
             }
-            tcpClient.Close();
-            client.Close();
-            Thread.Sleep(1000);
+            tcpClient?.Close();
+            client?.Close();
+            Thread.Sleep(500);
         }
+        
         //sends Message over TCP
         public void SendMessage(string msg, string purpose)
         {
@@ -494,7 +503,18 @@ namespace CGH_Server.Networking
                 NetworkStream stream = client.GetStream();
                 if (stream.CanWrite)
                 {
-                    byte[] msgArr = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(new ClientMsg() { purpose = purpose, msg = msg }));
+                    
+                    // Serialize the message:
+                    string json = JsonConvert.SerializeObject(new ClientMsg() { purpose = purpose, msg = msg });
+
+                    //Encrypt:
+                    if (this.protect.HasKey())
+                    {
+                        json = this.protect.Encrypt(json);
+                    }
+
+                    // Send Bytes:
+                    byte[] msgArr = Encoding.ASCII.GetBytes(json);
                     stream.Write(msgArr, 0, msgArr.Length);
                 }
 

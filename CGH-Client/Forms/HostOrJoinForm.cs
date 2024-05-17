@@ -1,12 +1,7 @@
 ﻿using CGH_Client.Controls;
 using CGH_Client.Utility;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace CGH_Client.Forms
 {
@@ -22,7 +17,8 @@ namespace CGH_Client.Forms
             name: "HostOrJoinForm",
             backgroundImagePath: Globals.ServerPathToFile("Assets\\Backgrounds", "background_2.png"),
             scale: 0.7,
-            movable: true
+            movable: true,
+            sameLocationAsParent: true
         )
         {
 
@@ -92,17 +88,13 @@ namespace CGH_Client.Forms
         private void JoinPanel_Click(object sender, EventArgs e)
         {
             Globals.hostOrJoin = "JOIN";
-            EnterRoomCodeForm enterRoomCodeForm = new EnterRoomCodeForm(this);
-            this.Hide();
-            enterRoomCodeForm.Show();
+            this.HideAndShow(new EnterRoomCodeForm(this));
         }
 
         private void CreatePanel_Click(object sender, EventArgs e)
         {
             Globals.hostOrJoin = "HOST";
-            ChooseNameForm chooseNameForm = new ChooseNameForm(this);
-            this.Hide();
-            chooseNameForm.Show();
+            this.HideAndShow(new ChooseNameForm(this));
         }
 
         private void BackButton_Click(object sender, EventArgs e)

@@ -21,8 +21,12 @@ namespace CGH_Server.Networking.Messages
         public int enemyScore { get; set; } = 0;
 
         public bool isRoundOver { get; set; } = false;
-
+        
         public int roundWinner { get; set; } = -1;
+        
+        public bool isGameOver { get; set; } = false;
+
+        public int gameWinner { get; set; } = -1;
 
         public int roundNumber { get; set; } = 0;
 

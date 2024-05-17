@@ -1,13 +1,8 @@
 ﻿using CGH_Client.Utility;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using CGH_Client.Controls;
-using System.Runtime.CompilerServices;
 
 namespace CGH_Client.Forms
 {
@@ -61,6 +56,26 @@ namespace CGH_Client.Forms
             gameCheatMenuItem.ClickAny += CheatPanel_Click;
             mainMenu.AddItem(gameCheatMenuItem, 2);
 
+            // Footer Menu:
+            MainMenuContainer footerMenu = new MainMenuContainer(
+                parent: new Size(this.Width, this.Height - 15),
+                alignment: "bottom-left",
+                horizontalRatio: 0.3,
+                fixedHeight: 80,
+                totalItems: 5,
+                itemPadding: 0
+            );
+            this.Controls.Add(footerMenu);
+
+            // Back button:
+            MainMenuItem backMenuItem = new MainMenuItem(
+                text: "סגור",
+                imagePath: Globals.ServerPathToFile("Assets\\Icons", "homeIcon.png"),
+                fontSize: 16F
+            );
+            backMenuItem.ClickAny += this.BackButton_Click;
+            footerMenu.AddItem(backMenuItem, 0);
+            
             // Add all to the form:
             this.Controls.Add(header);
             this.Controls.Add(mainMenu);
@@ -69,25 +84,24 @@ namespace CGH_Client.Forms
         private void CheatPanel_Click(object sender, EventArgs e)
         {
             Globals.gameChoosed = "Cheat";
-            HostOrJoinForm hostOrJoinForm = new HostOrJoinForm(this, "צ'יטים");
-            this.Hide();
-            hostOrJoinForm.Show();
+            this.HideAndShow(new HostOrJoinForm(this, "צ'יטים"));
         }
 
         private void WarPanel_Click(object sender, EventArgs e)
         {
             Globals.gameChoosed = "War";
-            HostOrJoinForm hostOrJoinForm = new HostOrJoinForm(this, "מלחמת קלפים");
-            this.Hide();
-            hostOrJoinForm.Show();
+            this.HideAndShow(new HostOrJoinForm(this, "מלחמת קלפים"));
         }
 
         private void UnoPanel_Click(object sender, EventArgs e)
         {
             Globals.gameChoosed = "Uno";
-            HostOrJoinForm hostOrJoinForm = new HostOrJoinForm(this, "אונו");
-            this.Hide();
-            hostOrJoinForm.Show();
+            this.HideAndShow(new HostOrJoinForm(this, "אונו"));
+        }
+        
+        private void BackButton_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
         }
     }
 }

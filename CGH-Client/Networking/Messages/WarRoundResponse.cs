@@ -22,7 +22,11 @@ namespace CGH_Client.Networking.Messages
         public bool isRoundOver { get; set; } = false;
 
         public int roundWinner { get; set; } = -1;
-        
+
+        public bool isGameOver { get; set; } = false;
+
+        public int gameWinner { get; set; } = -1;
+
         public int roundNumber { get; set; } = 0;
 
         public string yourCard { get; set; } = "";

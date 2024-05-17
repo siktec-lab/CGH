@@ -9,15 +9,12 @@ namespace CGH_Client.Forms
 {
     public class EnterRoomCodeForm : BaseMovableForm
     {
-
         
         ScreenHeader header;
         MainMenuContainer footerMenu;
-        Label enterRoomCodeLB;
         TextBox enterRoomCodeTB;
         Button enterRoomCodeB;
-
-
+        
         public int selectedRoomCode { get; private set; }
         
         public EnterRoomCodeForm(object parent) : base(
@@ -28,13 +25,6 @@ namespace CGH_Client.Forms
             movable: true
         )
         {
-            /*
-            StartPosition = FormStartPosition.CenterScreen;
-            Size = new Size(300, 225);
-            BackgroundImage = Image.FromFile(Globals.baseDirectory + @"\Assets\Backgrounds\background_2.png");
-            BackgroundImageLayout = ImageLayout.Center;
-            FormBorderStyle = FormBorderStyle.None;
-            */
 
             // Screen header:
             this.header = new ScreenHeader(
@@ -120,47 +110,11 @@ namespace CGH_Client.Forms
 
             // Send availabilty check:
             Globals.ServerConnector.SendMessage(Globals.gameChoosed + "-" + this.selectedRoomCode, "isRoomAvailable");
-            
-            /*
-            // Save the code for now and select the next form:
-            if (!Regex.IsMatch(enterRoomCodeTB.Text, "\\d{6}"))
-            {
-                MessageBox.Show("Room code not valid.");
-            }
-
-            else
-            {
-                //Globals.gameCode = int.Parse(enterRoomCodeTB.Text);
-                //Globals.ServerConnector.SendMessage(Globals.gameChoosed + "-" + Globals.gameCode, "isRoomAvailable");
-
-                while (true)
-                {
-                    if (Globals.isRoomAvailable == "True")
-                    {
-                        ChooseNameForm chooseNameForm = new ChooseNameForm(this);
-                        this.Hide();
-                        chooseNameForm.Show();
-                        break;
-                    }
-
-                    if (Globals.isRoomAvailable == "False")
-                    {
-                        MessageBox.Show("Room is not exists");
-                        break;
-                    }
-
-                    else
-                    {
-                        continue;
-                    }
-                }
-
-            }
-            */
         }
 
         private void BackButton_Click(object sender, EventArgs e)
         {
+            Globals.hostOrJoin = "None";
             this.CloseAndBack();
         }
     }

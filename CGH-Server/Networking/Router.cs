@@ -10,14 +10,16 @@ namespace CGH_Server.Networking
     {
         private const int BUFFER_SIZE = 2000000;//2MB
 
-        TcpClient client;
-        private TcpListener listener;
-        private Thread listenerThread;
+        TcpClient? client;
+        private TcpListener? listener;
+        private Thread? listenerThread;
         private int port;
-        string clientIp;
-        bool isAvailable;
+        string clientIp = "Unknown";
+
         public List<Port> ports { get; set; }
 
+        // Enable encryption:
+        bool encryptSocket = Globals.EnableEncryption;
 
         /*Constructor*/
         public Router()
@@ -58,13 +60,17 @@ namespace CGH_Server.Networking
             TcpClient tcpClient = client;
             using (NetworkStream clientStream = tcpClient.GetStream())
             {
+                // Client IP:
                 clientIp = Convert.ToString(((IPEndPoint)client.Client.RemoteEndPoint).Address);
-                Console.ResetColor();
+                Globals.ServerDebug("Router", $"Client connected from {clientIp} -> Looking for a free port");
+                /*Console.ResetColor();
                 Console.Write("[");
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.Write("Router");
                 Console.ResetColor();
-                Console.WriteLine($"] {clientIp}: Looking for port");
+                Console.WriteLine($"] {clientIp}: Looking for port");*/
+                
+                // Read the buffer:
                 byte[] buffer = new byte[BUFFER_SIZE];
                 int bytesRead;
                 try
@@ -80,19 +86,18 @@ namespace CGH_Server.Networking
                             {
                                 if (ports[i].isAvailable)
                                 {
-                                    SendMessage(Convert.ToString(1001 + i), "Connect Here");
+                                    // Create an encryption handler:
+                                    Protect protect = new Protect(encryptSocket);
+                                    SendMessage(Convert.ToString(1001 + i) + "@" + protect.GetKey(), "Connect Here");
                                     ports[i].isAvailable = false;
-                                    Console.ResetColor();
-                                    Console.Write("[");
-                                    Console.ForegroundColor = ConsoleColor.Yellow;
-                                    Console.Write("Router");
-                                    Console.ResetColor();
-                                    Console.WriteLine($"] Connected {clientIp} To {1001 + i}");
+                                    Globals.ServerDebug("Router", $"Connected {clientIp} To {1001 + i} -> Encryption is: {(encryptSocket ? "Enabled" : "Disabled")} ");
+
+                                    // Add the client to the list with the port:
                                     try
                                     {
                                         if (ports[i + 1] == null)
                                         {
-                                            TCP clientTcp = new TCP(1001 + i);
+                                            TCP clientTcp = new TCP(1001 + i, protect);
                                             Globals.ClientTCPS.Add(clientTcp);
                                             ports.Add(new Port(1001 + i));
                                             break;
@@ -101,7 +106,7 @@ namespace CGH_Server.Networking
                                         {
                                             if (ports.Count == j + 1)
                                             {
-                                                TCP clientTcp = new TCP(1001 + i);
+                                                TCP clientTcp = new TCP(1001 + i, protect);
                                                 Globals.ClientTCPS.Add(clientTcp);
                                                 ports.Add(new Port(1001 + j + 1));
                                                 break;
@@ -110,7 +115,7 @@ namespace CGH_Server.Networking
                                     }
                                     catch
                                     {
-                                        TCP clientTcp = new TCP(1001 + i);
+                                        TCP clientTcp = new TCP(1001 + i, protect);
                                         Globals.ClientTCPS.Add(clientTcp);
                                         ports.Add(new Port(1001 + i));
                                         break;
@@ -121,6 +126,7 @@ namespace CGH_Server.Networking
                         }
                         else if (clientMsg.purpose == "Connected")
                         {
+                            // Client is connected to the port we can now close the router connection:
                             client.Close();
                         }
                     }

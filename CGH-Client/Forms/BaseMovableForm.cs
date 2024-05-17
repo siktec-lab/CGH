@@ -7,6 +7,8 @@ namespace CGH_Client.Forms
     public class BaseMovableForm : Form
     {
         public object parent;
+        public Point screenLocationFallback = new Point(0, 0);
+        public bool sameLocationAsParent = true;
         private string formName;
         private bool mouseDown;
         private System.Drawing.Point lastLocation;
@@ -18,7 +20,9 @@ namespace CGH_Client.Forms
             Point? size = null,
             double scale = 0.7,
             Point? location = null,
-            bool movable = true
+            bool movable = true,
+            bool sameSizeAsParent = false,
+            bool sameLocationAsParent = true
         )
         {
             //Optimization:
@@ -34,15 +38,31 @@ namespace CGH_Client.Forms
             // Set form name:
             this.parent = parent;
             this.formName = name;
+            this.sameLocationAsParent = sameLocationAsParent;
 
             // Set basic sizes:
-            this.Size = size != null ? (Size)size : this.GetSizeBasedOnScreenPercentage(scale);
-            this.StartPosition = FormStartPosition.CenterScreen; //TODO: Change to CenterParent
+            if (sameSizeAsParent && parent is Form parentForSize)
+            {
+                this.Size = parentForSize.Size;
+            }
+            else
+            {
+                this.Size = size != null ? (Size)size : this.GetSizeBasedOnScreenPercentage(scale);
+            }
+
+            // Set basic locations:
+            this.UpdateFormInitialLocation();
+
+            // Border style:
             this.FormBorderStyle = FormBorderStyle.None;
+
+            // Override location:
             if (location != null)
             {
                 this.Location = (Point)location;
             }
+
+            // Set background image:
             if (backgroundImagePath != "")
             {
                 this.BackgroundImage = Image.FromFile(backgroundImagePath);
@@ -68,6 +88,34 @@ namespace CGH_Client.Forms
             };
         }
 
+        public void UpdateFormInitialLocation()
+        {
+            // Set basic locations:
+            if (this.sameLocationAsParent && parent is Form parentFormLocation)
+            {
+                this.StartPosition = FormStartPosition.Manual;
+                this.Location = this.GetParentCenterLocation(parentFormLocation);
+            }
+            else if (this.sameLocationAsParent && this.screenLocationFallback != new Point(0, 0))
+            {
+                this.StartPosition = FormStartPosition.Manual;
+                this.Location = this.screenLocationFallback;
+            }
+            else
+            {
+                this.StartPosition = FormStartPosition.CenterScreen;
+            }
+        }
+        
+        private Point GetParentCenterLocation(Form form)
+        {
+            return new Point(
+                form.Location.X + (form.Width - this.Width) / 2,
+                form.Location.Y + (form.Height - this.Height) / 2
+            );
+        }
+
+
         private Size GetSizeBasedOnScreenPercentage(double perc = 0.7)
         {
             // Get screen size:
@@ -81,24 +129,22 @@ namespace CGH_Client.Forms
             return new Size(width, height);
         }
 
-        private void Form_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+        private void Form_MouseDown(object sender, MouseEventArgs e)
         {
             mouseDown = true;
             lastLocation = e.Location;
         }
 
-        private void Form_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
+        private void Form_MouseMove(object sender, MouseEventArgs e)
         {
             if (mouseDown)
             {
-                this.Location = new System.Drawing.Point(
-                    (this.Location.X - lastLocation.X) + e.X, (this.Location.Y - lastLocation.Y) + e.Y);
-
+                this.Location = new Point((this.Location.X - lastLocation.X) + e.X, (this.Location.Y - lastLocation.Y) + e.Y);
                 this.Update();
             }
         }
 
-        private void Form_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
+        private void Form_MouseUp(object sender, MouseEventArgs e)
         {
             mouseDown = false;
         }
@@ -127,12 +173,26 @@ namespace CGH_Client.Forms
             };
             this.Close();
         }
-        
+
+        public void HideAndShow(object form)
+        {            
+            if (form is BaseMovableForm formToshow)
+            {
+                formToshow.parent = this;
+                formToshow.screenLocationFallback = this.GetParentCenterLocation(this);
+                formToshow.UpdateFormInitialLocation();
+            }
+            this.Hide();
+            ((Form)form).Show();
+        }
+            
         public void SwitchToForm(object form)
         {
             if (form is BaseMovableForm form1)
             {
                 form1.parent = this.parent;
+                form1.screenLocationFallback = this.GetParentCenterLocation((Form)this.parent);
+                form1.UpdateFormInitialLocation();
             }
             this.FormClosed += (s, args) =>
             {

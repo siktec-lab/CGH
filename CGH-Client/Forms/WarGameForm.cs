@@ -3,13 +3,7 @@ using CGH_Client.Networking.Messages;
 using CGH_Client.Utility;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -20,11 +14,13 @@ namespace CGH_Client.Forms
 
         ScreenHeader header;
         MainMenuContainer footerMenu;
+        ScoreCounter scoreCounter;
         PlayerCard player1, player2;
         WarGameRoom room;
         Player me;
         Player enemy;
-
+        bool gameWasFinalized = false;
+        
         public WarGameForm() : base(
             parent: null,
             name: "WarGameForm",
@@ -68,6 +64,16 @@ namespace CGH_Client.Forms
             backMenuItem.ClickAny += this.BackButton_Click;
             this.footerMenu.AddItem(backMenuItem, 0);
 
+
+            // Score counter:
+            scoreCounter = new ScoreCounter(
+                parent: this.Size,
+                fixedHeight: 80,
+                offsetTop: 80
+            );
+            this.scoreCounter.ResetScore(refresh: true);
+            this.Controls.Add(scoreCounter);
+            
             // Player 1:
             player1 = new PlayerCard(
                 parent: this.Size,
@@ -75,6 +81,7 @@ namespace CGH_Client.Forms
             );
             this.Controls.Add(player1);
             this.player1.drawButton.Click += this.DrawButton_Click;
+            
             // Player 2:
             player2 = new PlayerCard(
                 parent: this.Size,
@@ -118,42 +125,64 @@ namespace CGH_Client.Forms
             this.player1.SetCard(round.yourCard);
             this.player2.SetCard(round.enemyCard);
 
-            // If the round is over:
-            if (!round.isRoundOver)
+            // Update Score:
+            this.scoreCounter.SetScore(round.yourScore, round.enemyScore, true);
+            
+            // Handle game state:
+            if (!round.isRoundOver && !round.isGameOver) // Round is NOT over
             {
-                if (round.yourCard != "")
+                if (round.yourCard == "")
                 {
-                    this.player1.SetTurn(false);
+                    this.player1.SetTurn(true, "תורך לשחק");
                 } 
                 else
                 {
-                    this.player1.SetTurn(true);
+                    this.player1.SetTurn(false, "hide");
                 }
-                if (round.enemyCard != "")
+                if (round.enemyCard == "")
                 {
-                    this.player2.SetTurn(false);
+                    this.player2.SetTurn(true, "ממתין למתמודד");
                 } 
                 else
                 {
-                    this.player2.SetTurn(true);
+                    this.player2.SetTurn(false, "hide");
                 }
             }
-            else
+            else if (!round.isGameOver) // Round is over but the GAME IS NOT
             {
+                if (round.roundWinner == -1)
+                {
+                    this.player1.SetTurn(false, "תיקו!");
+                    this.player2.SetTurn(false, "תיקו!");
+                } else
+                {
+                    this.player1.SetTurn(false, round.roundWinner == round.yourId ? "ניצחת!" : "hide");
+                    this.player2.SetTurn(false, round.roundWinner == round.enemyId ? "הפסדת!" : "hide");
+                }
+                
                 Task.Delay(3000).ContinueWith(t =>
                 {
-                    this.player1.SetTurn(true);
-                    this.player2.SetTurn(true);
+                    this.player1.SetTurn(true, "תורך לשחק");
+                    this.player2.SetTurn(true, "ממתין למתמודד");
                     this.player1.SetCard("None");
                     this.player2.SetCard("None");
 
                 }, TaskScheduler.FromCurrentSynchronizationContext());
             }
-
-            //TODO: update scores:
-            
-            //TODO: Game finished:
-            
+            else // GAME IS OVER
+            {
+                if (round.gameWinner == -1)
+                {
+                    this.player1.SetTurn(false, "תיקו!");
+                    this.player2.SetTurn(false, "תיקו!");
+                }
+                else
+                {
+                    this.player1.SetTurn(false, round.gameWinner == round.yourId ? "ניצחת את המערכה!" : "hide");
+                    this.player2.SetTurn(false, round.gameWinner == round.enemyId ? "הפסדת את המערכה!" : "hide");
+                }
+                this.gameWasFinalized = true;
+            }
         }
         public void SetPlayers()
         {
@@ -163,7 +192,7 @@ namespace CGH_Client.Forms
 
         public void DrawButton_Click(object sender, EventArgs e)
         {
-            this.player1.SetTurn(false);
+            this.player1.SetTurn(false, "hide");
             GameRoundMessage message = new GameRoundMessage(){
                 playerName = this.me.Name,
                 gameType   = this.room.gameType,
@@ -176,16 +205,32 @@ namespace CGH_Client.Forms
         
         private void WarGameForm_FormClosing(object sender, EventArgs e)
         {
-            if (Globals.gameRoom is BaseGameRoom room)
+            if (Globals.gameRoom is BaseGameRoom room && room != null)
             {
-                MessageBox.Show("Closing????");
                 room.RemoveFromGame();
             }
+            Globals.hostOrJoin = "None";
         }
 
         private void BackButton_Click(object sender, EventArgs e)
         {
-            this.CloseAndBack();
+            // Game Has Ended simply close the form
+            if (this.gameWasFinalized) 
+            {
+                // Delete gameRoom:
+                Globals.gameRoom = null;
+                MessageBox.Show("תודה ששיקחת - המשחק יסגר כעת");
+                this.CloseAndBack();
+                return;
+            }
+
+            //Message Box to confirm that you are losing:
+            DialogResult dialogResult = MessageBox.Show("אתה בטוח שברצונך לפרוש? אתה תפסיד אוטומתית", "יציאה", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                MessageBox.Show("כרצונך! הפסדת");
+                this.CloseAndBack();
+            }
         }
     }
 }

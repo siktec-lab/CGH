@@ -9,7 +9,7 @@ namespace CGH_Client.Utility
 {
     public static class Globals
     {
-        public static bool showLayoutDebug = true;
+        public static bool showLayoutDebug = false;
         public static string baseDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName;
 
         public static string currentScreenName = "None";

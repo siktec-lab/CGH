@@ -16,16 +16,24 @@ namespace CGH_Client.Networking
         private const int BUFFER_SIZE = 10000000; //10MB
 
         public TcpClient client { get; set; }
+        
         private Thread tcpThread;
 
         private string ip;
+        
         private int port;
+
+        Protect protect = new Protect();
+        
         public bool isListenToServer { get; set; }
+        
         public bool isConnectedToServer { get; set; }
-        public Client(string ip, int port)
+        
+        public Client(string ip, int port, string AesKey = "")
         {
             this.ip = ip;
             this.port = port;
+            this.protect.SetKey(AesKey);
             isListenToServer = true;
         }
 
@@ -65,15 +73,57 @@ namespace CGH_Client.Networking
                                     int bytesRead;
                                     while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) != 0)
                                     {
-                                        string msg = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                                        // Decrypt the message:
+                                        string msg = "";
+                                        if (protect.HasKey())
+                                        {
+                                            try
+                                            {
+                                                msg = protect.Decrypt(Encoding.ASCII.GetString(buffer, 0, bytesRead));
+                                            }
+                                            catch (Exception)
+                                            {
+                                                msg = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                                            }
+                                        } else
+                                        {
+                                            msg = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                                        }
+                                        
                                         ServerMsg serverMsg = JsonConvert.DeserializeObject<ServerMsg>(msg);
                                         switch (serverMsg.purpose)
                                         {
                                             case "Connect Here":
                                                 {
                                                     SendMessage("", "Connected");
+                                                    // Split server message port-secretkey:
+                                                    string[] msgParts = serverMsg.msg.Split('@');
+
+                                                    // Safely parse the port number:
+                                                    int port = 0;
+                                                    if (!int.TryParse(msgParts[0], out port)) {
+                                                        MessageBox.Show("Invalid port number received from server - cannot connect to server. Retrying in 2 seconds.");
+                                                        Thread.Sleep(2000);
+                                                        break;
+                                                    }
+
+                                                    // Safely parse the secret key make sure it is 128 bit key:
+                                                    string aesKey = msgParts.Length > 0 ? msgParts[1] : "";
+                                                    // Get bytes and check if it is 128 bit key:
+                                                    if (aesKey.Length > 0)
+                                                    {
+                                                        byte[] keyBytes = Encoding.UTF8.GetBytes(aesKey);
+                                                        if (keyBytes.Length != 24)
+                                                        {
+                                                            MessageBox.Show("Invalid secret key received from server - cannot connect to server. Retrying in 2 seconds.");
+                                                            Thread.Sleep(2000);
+                                                            break;
+                                                        }
+                                                    }
+
+                                                    // Start the client with the new port and secret key:
                                                     isListenToServer = false;
-                                                    Globals.ServerConnector = new Client(Globals.serverIP, int.Parse(serverMsg.msg));
+                                                    Globals.ServerConnector = new Client(Globals.serverIP, port, aesKey);
                                                     Globals.ServerConnector.Start();
                                                 }
                                                 break;
@@ -226,7 +276,7 @@ namespace CGH_Client.Networking
                                                 break;
                                             case "removed-from-game-none":
                                                 {
-                                                    // TODO: Do nothing
+                                                    // Do nothing
                                                 }
                                                 break;
                                             case "broadcast-removed-from-game-player":
@@ -264,8 +314,14 @@ namespace CGH_Client.Networking
                                                         }
                                                         else if (Globals.currentScreen is WarGameForm game)
                                                         {
+                                                            
                                                             game.Invoke((MethodInvoker)delegate
                                                             {
+                                                                if (Globals.gameRoom != null)
+                                                                {
+                                                                    Globals.gameRoom = null;
+                                                                }
+                                                                MessageBox.Show("המתחרה שלך פרש. ניצחת!!!");
                                                                 game.CloseAndBack();
                                                             });
                                                         }
@@ -289,8 +345,15 @@ namespace CGH_Client.Networking
                                                         {
                                                             screen.CloseAndBack(); // Will not contact server because we destroyed the game room.
                                                         });
+                                                    } 
+                                                    else if (Globals.currentScreen is WarGameForm game)
+                                                    {
+                                                        game.Invoke((MethodInvoker)delegate
+                                                        {
+                                                            MessageBox.Show("המארח פרש מהמשחק - ניצחת!!!");
+                                                            game.CloseAndBack();
+                                                        });
                                                     }
-                                                    //TODO: implement for other screens:
                                                 }
                                                 break;
                                             case "broadcast-start-game":
@@ -384,8 +447,8 @@ namespace CGH_Client.Networking
                 }
                 catch (Exception e)
                 {
-                    MessageBox.Show("Server is away trying to reconnect again in 5 seconds");
-                    Thread.Sleep(5000);
+                    MessageBox.Show("Server is away trying to reconnect again in 2 seconds");
+                    Thread.Sleep(2000);
                 }
             }
             this.SendMessage("", "disconnect");
@@ -404,7 +467,17 @@ namespace CGH_Client.Networking
                 NetworkStream stream = client.GetStream();
                 if (stream.CanWrite)
                 {
-                    byte[] cmdArr = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(new ServerMsg() { purpose = purpose, msg = msg }));
+                    // Serialize:
+                    string json = JsonConvert.SerializeObject(new ServerMsg() { purpose = purpose, msg = msg });
+                    
+                    //Encrypt:
+                    if (this.protect.HasKey()) 
+                    {
+                        json = this.protect.Encrypt(json);
+                    }
+
+                    // Send Bytes:
+                    byte[] cmdArr = Encoding.ASCII.GetBytes(json);
                     stream.Write(cmdArr, 0, cmdArr.Length);
                 }
             }

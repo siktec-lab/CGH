@@ -1,26 +1,25 @@
 ﻿using CGH_Client.Utility;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CGH_Client.Forms
 {
-    public class ChoosePlayerCardForm : Form
+    public class ChoosePlayerCardForm : BaseMovableForm
     {
 
         PictureBox char1, char2, char3, char4, char5, char6, char7, char8, char9, char10, char11, char12, char13;
 
-        public ChoosePlayerCardForm()
+        public ChoosePlayerCardForm(object parent) : base(
+            parent: parent,
+            name: "ChoosePlayerCardForm",
+            backgroundImagePath: Globals.ServerPathToFile("Assets\\Backgrounds", "background_2.png"),
+            scale: 0.25,
+            movable: true
+        )
         {
-            StartPosition = FormStartPosition.CenterScreen;
+            // Override the scalable size:
             Size = new Size(300, 300);
-            BackgroundImage = Image.FromFile(Globals.baseDirectory + @"\Assets\Backgrounds\background_2.png");
-            BackgroundImageLayout = ImageLayout.Center;
-            FormBorderStyle = FormBorderStyle.None;
 
             char1 = new PictureBox()
             {
@@ -199,9 +198,7 @@ namespace CGH_Client.Forms
             var pb = sender as PictureBox;
             Globals.charTagSelected = int.Parse(pb.Tag.ToString());
             Globals.charImgSelected = pb.Image;
-            //ChooseNameForm chooseNameForm = new ChooseNameForm(this);
             this.Close();
-            //chooseNameForm.Show();
         }
     }
 }

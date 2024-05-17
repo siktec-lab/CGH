@@ -27,6 +27,8 @@ namespace CGH_Client.Utility
 
         public bool isGameStarted { get; set; } = false;
 
+        public bool isGameEnded { get; set; } = false;
+
         public BaseGameRoom()
         {
 

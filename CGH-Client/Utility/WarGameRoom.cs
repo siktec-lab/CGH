@@ -9,10 +9,6 @@ namespace CGH_Client.Utility
 {
     internal class WarGameRoom : BaseGameRoom
     {
-        int currentRound = 1;
-
-        List<WarGameRound> rounds;
-
         public WarGameRoom() {
             this.gameType = "War";
         }
@@ -25,8 +21,7 @@ namespace CGH_Client.Utility
         public override void StartGame()
         {
             this.isGameStarted = true;
-            this.currentRound = 1;
-
+            this.isGameEnded = false;
         }
     }
 

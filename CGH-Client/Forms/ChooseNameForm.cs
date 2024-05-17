@@ -3,11 +3,8 @@ using CGH_Client.Utility;
 using CGH_Client.Networking.Messages;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
@@ -170,15 +167,10 @@ namespace CGH_Client.Forms
                     );
                     Thread.Sleep(100);
                 } else {
-
                     // Show Error message:
                     MessageBox.Show("אירעה שגיאה אנא נסה שנית לאחר אתחול המשחק", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     this.CloseAndBack();
                 }
-
-                //Globals.gameLobbyForm = new GameLobbyForm();
-                //this.Hide();
-                //Globals.gameLobbyForm.Show();
             }
             else
             {
@@ -186,21 +178,21 @@ namespace CGH_Client.Forms
                 sb.Clear();
             }
         }
-
+        
         private void ChoosePlayerCardPB_Click(object sender, EventArgs e)
         {
-            ChoosePlayerCardForm choosePlayerCardForm = new ChoosePlayerCardForm();
+            ChoosePlayerCardForm choosePlayerCardForm = new ChoosePlayerCardForm(this);
             choosePlayerCardForm.FormClosed += (s, args) =>
             {
                 this.SetPalyerAvatarSelection();
                 this.Show();
             };
-            this.Hide();
-            choosePlayerCardForm.Show();
+            this.HideAndShow(choosePlayerCardForm);
         }
 
         private void BackButton_Click(object sender, EventArgs e)
         {
+            Globals.hostOrJoin = "None";
             this.CloseAndBack();
         }
     }
